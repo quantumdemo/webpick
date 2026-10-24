@@ -34,8 +34,8 @@ export async function checkCanSnap(): Promise<{ allowed: boolean; remaining: num
         return { allowed: true, remaining: 9999, needsAuth: false }
       }
 
-      if (profile?.is_pro || profile?.plan === 'pro') {
-        const remainingPro = profile?.credits ?? 50
+      if (profile?.is_pro) {
+        const remainingPro = profile?.credits ?? 500
         if (remainingPro > 0) return { allowed: true, remaining: remainingPro, needsAuth: false }
         return { allowed: false, remaining: 0, needsAuth: false }
       }
@@ -80,10 +80,12 @@ export async function incrementSnap() {
         .eq('id', user.id)
         .maybeSingle()
 
-      if (profile && profile.plan !== 'team' && (profile.credits || 0) > 0) {
+      if (profile && profile.plan !== 'team') {
+        const currentCredits = profile.credits ?? 10
+        const newCredits = Math.max(0, currentCredits - 1)
         await supabase
           .from('profiles')
-          .update({ credits: profile.credits - 1 })
+          .update({ credits: newCredits, updated_at: new Date().toISOString() })
           .eq('id', user.id)
       }
     } else {

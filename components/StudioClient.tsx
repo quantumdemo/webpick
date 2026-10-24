@@ -15,14 +15,13 @@ import {
   ExternalLink,
   Palette,
   FileText,
-  Zap,
-  Moon,
-  Sun,
-  Edit3,
-  Code2
+  Zap
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { calculateWcagContrast, generateTailwindConfig, generateDesignMd, generateAiPrompt } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import JSZip from 'jszip';
 
 interface StudioProps {
@@ -32,7 +31,7 @@ interface StudioProps {
 export function StudioClient({ initialProject }: StudioProps) {
   const [project] = useState(initialProject);
   const [activeTab, setActiveTab] = useState<'tokens' | 'tailwind' | 'design' | 'prompt'>('tokens');
-  const [mobileSection, setMobileSection] = useState<'style' | 'canvas' | 'code'>('canvas');
+  const [mobileTab, setMobileTab] = useState<'style' | 'canvas' | 'code'>('canvas');
   const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'cyberpunk' | 'emerald'>('dark');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -68,7 +67,7 @@ export function StudioClient({ initialProject }: StudioProps) {
       zip.file('lib/tokens.json', JSON.stringify(tokens, null, 2));
       zip.file('DESIGN.md', generateDesignMd(tokens));
 
-      const heroCode = `'use client';\n\nexport function Hero() {\n  return (\n    <section className="py-20 px-6 text-center max-w-4xl mx-auto">\n      <h1 className="text-5xl font-bold tracking-tight mb-4">${editableHeroTitle}</h1>\n      <p className="text-lg opacity-80 mb-8 max-w-2xl mx-auto">${editableSubtext}</p>\n      <div className="flex items-center justify-center gap-4">\n        <button className="px-6 py-3 rounded-lg font-semibold bg-[${colors[1]?.hex || '#6366F1'}] text-white hover:opacity-90 transition">\n          Get Started Free\n        </button>\n      </div>\n    </section>\n  );\n}\n`;
+      const heroCode = `'use client';\n\nexport function Hero() {\n  return (\n    <section className="py-20 px-6 text-center max-w-4xl mx-auto">\n      <h1 className="text-5xl font-bold tracking-tight mb-4">${editableHeroTitle}</h1>\n      <p className="text-lg opacity-80 mb-8 max-w-2xl mx-auto">${editableSubtext}</p>\n      <div className="flex items-center justify-center gap-4">\n        <Button size="lg">\n          Get Started Free\n        </Button>\n      </div>\n    </section>\n  );\n}\n`;
       zip.file('components/Hero.tsx', heroCode);
       zip.file(
         'README.md',
@@ -121,11 +120,10 @@ export function StudioClient({ initialProject }: StudioProps) {
       {/* Top Header */}
       <header className="border-b border-white/10 bg-zinc-950/80 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <Link
-            href="/dashboard"
-            className="p-1.5 rounded-lg border border-white/10 hover:bg-zinc-800 transition text-zinc-400 hover:text-white"
-          >
-            <ArrowLeft className="w-4 h-4" />
+          <Link href="/dashboard">
+            <Button variant="outline" size="icon" className="h-8 w-8">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
           </Link>
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/30">
@@ -139,82 +137,58 @@ export function StudioClient({ initialProject }: StudioProps) {
 
         {/* Viewport Switcher (Desktop) */}
         <div className="hidden lg:flex items-center bg-zinc-900 p-1 rounded-lg border border-white/10 gap-1 text-xs">
-          <button
+          <Button
+            variant={viewport === 'desktop' ? 'default' : 'ghost'}
+            size="sm"
             onClick={() => setViewport('desktop')}
-            className={`px-3 py-1 rounded-md flex items-center gap-1.5 font-medium transition ${
-              viewport === 'desktop' ? 'bg-indigo-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
-            }`}
           >
-            <Monitor className="w-3.5 h-3.5" /> Desktop
-          </button>
-          <button
+            <Monitor className="w-3.5 h-3.5 mr-1" /> Desktop
+          </Button>
+          <Button
+            variant={viewport === 'tablet' ? 'default' : 'ghost'}
+            size="sm"
             onClick={() => setViewport('tablet')}
-            className={`px-3 py-1 rounded-md flex items-center gap-1.5 font-medium transition ${
-              viewport === 'tablet' ? 'bg-indigo-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
-            }`}
           >
-            <Tablet className="w-3.5 h-3.5" /> Tablet
-          </button>
-          <button
+            <Tablet className="w-3.5 h-3.5 mr-1" /> Tablet
+          </Button>
+          <Button
+            variant={viewport === 'mobile' ? 'default' : 'ghost'}
+            size="sm"
             onClick={() => setViewport('mobile')}
-            className={`px-3 py-1 rounded-md flex items-center gap-1.5 font-medium transition ${
-              viewport === 'mobile' ? 'bg-indigo-600 text-white shadow-sm' : 'text-zinc-400 hover:text-white'
-            }`}
           >
-            <Smartphone className="w-3.5 h-3.5" /> Mobile
-          </button>
+            <Smartphone className="w-3.5 h-3.5 mr-1" /> Mobile
+          </Button>
         </div>
 
         {/* Export Button */}
-        <button
-          onClick={handleDownloadZip}
-          disabled={isExporting}
-          className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 sm:px-4 py-1.5 rounded-lg text-xs transition shadow-lg shadow-indigo-600/25 flex items-center gap-2 disabled:opacity-50"
-        >
+        <Button onClick={handleDownloadZip} disabled={isExporting} size="sm">
           {isExporting ? (
-            <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-1" />
           ) : (
-            <Download className="w-3.5 h-3.5" />
+            <Download className="w-3.5 h-3.5 mr-1" />
           )}
           <span className="hidden sm:inline">Export Next.js (.zip)</span>
           <span className="sm:hidden">Export</span>
-        </button>
+        </Button>
       </header>
 
-      {/* Mobile Tab View Selector (< 768px) */}
-      <div className="lg:hidden flex border-b border-white/10 bg-zinc-900/90 px-4 py-2 gap-2 text-xs">
-        <button
-          onClick={() => setMobileSection('style')}
-          className={`flex-1 py-1.5 rounded-lg font-semibold transition ${
-            mobileSection === 'style' ? 'bg-indigo-600 text-white' : 'text-zinc-400'
-          }`}
-        >
-          Style Guide
-        </button>
-        <button
-          onClick={() => setMobileSection('canvas')}
-          className={`flex-1 py-1.5 rounded-lg font-semibold transition ${
-            mobileSection === 'canvas' ? 'bg-indigo-600 text-white' : 'text-zinc-400'
-          }`}
-        >
-          Canvas
-        </button>
-        <button
-          onClick={() => setMobileSection('code')}
-          className={`flex-1 py-1.5 rounded-lg font-semibold transition ${
-            mobileSection === 'code' ? 'bg-indigo-600 text-white' : 'text-zinc-400'
-          }`}
-        >
-          Code
-        </button>
+      {/* Mobile Screen (< 768px): Render as Tabs with 3 Triggers */}
+      <div className="md:hidden p-4 border-b border-white/10 bg-zinc-900/90">
+        <Tabs value={mobileTab} onValueChange={(val) => setMobileTab(val as 'style' | 'canvas' | 'code')}>
+          <TabsList className="w-full grid grid-cols-3">
+            <TabsTrigger value="style">Style</TabsTrigger>
+            <TabsTrigger value="canvas">Preview</TabsTrigger>
+            <TabsTrigger value="code">Export</TabsTrigger>
+          </TabsList>
+        </Tabs>
       </div>
 
-      {/* Workspace Grid */}
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+      {/* Main Workspace Layout */}
+      <div className="flex-1 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
         {/* LEFT PANEL: Style Tokens */}
         <aside
-          className={`lg:col-span-3 border-r border-white/10 bg-zinc-950/60 p-5 overflow-y-auto space-y-6 max-h-[calc(100vh-53px)] ${
-            mobileSection === 'style' ? 'block' : 'hidden lg:block'
+          className={`md:col-span-3 border-r border-white/10 bg-zinc-950/60 p-5 overflow-y-auto space-y-6 max-h-[calc(100vh-53px)] ${
+            mobileTab === 'style' ? 'block' : 'hidden md:block'
           }`}
         >
           <div>
@@ -229,10 +203,7 @@ export function StudioClient({ initialProject }: StudioProps) {
               {colors.map((c: any, index: number) => {
                 const wcag = calculateWcagContrast(c.hex, colors[0]?.hex || '#0A0B0E');
                 return (
-                  <div
-                    key={index}
-                    className="p-2.5 rounded-xl bg-zinc-900/80 border border-white/10 flex items-center justify-between"
-                  >
+                  <Card key={index} className="p-2.5 bg-zinc-900/80 border-white/10 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <div
                         className="w-7 h-7 rounded-lg border border-white/20 flex-shrink-0"
@@ -254,28 +225,30 @@ export function StudioClient({ initialProject }: StudioProps) {
                       >
                         {wcag.badge}
                       </span>
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
                         onClick={() => handleCopy(c.hex, `color-${index}`, c.hex)}
-                        className="p-1 text-zinc-400 hover:text-white"
                       >
                         {copiedKey === `color-${index}` ? (
                           <Check className="w-3.5 h-3.5 text-emerald-400" />
                         ) : (
                           <Copy className="w-3.5 h-3.5" />
                         )}
-                      </button>
+                      </Button>
                     </div>
-                  </div>
+                  </Card>
                 );
               })}
             </div>
           </div>
         </aside>
 
-        {/* CENTER PANEL: Interactive Canvas */}
+        {/* CENTER PANEL: Canvas Preview */}
         <main
-          className={`lg:col-span-6 bg-[#0B0C10] p-4 sm:p-6 overflow-y-auto flex flex-col items-center justify-start space-y-4 ${
-            mobileSection === 'canvas' ? 'block' : 'hidden lg:flex'
+          className={`md:col-span-6 bg-[#0B0C10] p-4 sm:p-6 overflow-y-auto flex flex-col items-center justify-start space-y-4 ${
+            mobileTab === 'canvas' ? 'block' : 'hidden md:flex'
           }`}
         >
           {/* Theme Selector */}
@@ -283,33 +256,33 @@ export function StudioClient({ initialProject }: StudioProps) {
             <span className="text-zinc-400 text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1">
               <Zap className="w-3 h-3 text-indigo-400" /> Theme:
             </span>
-            <button
+            <Button
+              variant={themeMode === 'dark' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 px-2.5 rounded-full"
               onClick={() => setThemeMode('dark')}
-              className={`px-2.5 py-1 rounded-full text-xs transition ${
-                themeMode === 'dark' ? 'bg-indigo-600 text-white font-medium' : 'text-zinc-400 hover:text-white'
-              }`}
             >
               Dark
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={themeMode === 'light' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 px-2.5 rounded-full"
               onClick={() => setThemeMode('light')}
-              className={`px-2.5 py-1 rounded-full text-xs transition ${
-                themeMode === 'light' ? 'bg-indigo-600 text-white font-medium' : 'text-zinc-400 hover:text-white'
-              }`}
             >
               Light
-            </button>
-            <button
+            </Button>
+            <Button
+              variant={themeMode === 'cyberpunk' ? 'default' : 'ghost'}
+              size="sm"
+              className="h-7 px-2.5 rounded-full"
               onClick={() => setThemeMode('cyberpunk')}
-              className={`px-2.5 py-1 rounded-full text-xs transition ${
-                themeMode === 'cyberpunk' ? 'bg-indigo-600 text-white font-medium' : 'text-zinc-400 hover:text-white'
-              }`}
             >
               Cyberpunk
-            </button>
+            </Button>
           </div>
 
-          {/* Canvas Box */}
+          {/* Interactive Canvas Box */}
           <div
             className={`transition-all duration-300 rounded-2xl border p-6 sm:p-8 shadow-2xl space-y-6 ${getViewportWidth()} ${getCanvasThemeClass()}`}
           >
@@ -339,45 +312,47 @@ export function StudioClient({ initialProject }: StudioProps) {
               >
                 {editableSubtext}
               </p>
-              <button
-                className="px-6 py-2.5 rounded-lg font-semibold shadow-lg text-xs"
-                style={{ backgroundColor: colors[1]?.hex || '#6366F1', color: '#FFFFFF' }}
-              >
+              <Button style={{ backgroundColor: colors[1]?.hex || '#6366F1', color: '#FFFFFF' }}>
                 Get Started Free
-              </button>
+              </Button>
             </div>
           </div>
         </main>
 
         {/* RIGHT PANEL: Code Tabs */}
         <aside
-          className={`lg:col-span-3 border-l border-white/10 bg-zinc-950/60 p-5 flex flex-col overflow-y-auto max-h-[calc(100vh-53px)] ${
-            mobileSection === 'code' ? 'block' : 'hidden lg:flex'
+          className={`md:col-span-3 border-l border-white/10 bg-zinc-950/60 p-5 flex flex-col overflow-y-auto max-h-[calc(100vh-53px)] ${
+            mobileTab === 'code' ? 'block' : 'hidden md:flex'
           }`}
         >
-          <div className="flex items-center bg-zinc-900 p-1 rounded-xl border border-white/10 mb-4 text-xs">
-            <button
-              onClick={() => setActiveTab('tokens')}
-              className={`flex-1 py-1 font-semibold rounded-lg transition ${
-                activeTab === 'tokens' ? 'bg-indigo-600 text-white' : 'text-zinc-400'
-              }`}
-            >
-              tokens.json
-            </button>
-            <button
-              onClick={() => setActiveTab('tailwind')}
-              className={`flex-1 py-1 font-semibold rounded-lg transition ${
-                activeTab === 'tailwind' ? 'bg-indigo-600 text-white' : 'text-zinc-400'
-              }`}
-            >
-              tailwind.config
-            </button>
-          </div>
-
-          <div className="flex-1 bg-zinc-900/90 border border-white/10 rounded-xl p-4 font-mono text-[11px] overflow-x-auto text-zinc-300">
-            {activeTab === 'tokens' && <pre>{JSON.stringify(tokens, null, 2)}</pre>}
-            {activeTab === 'tailwind' && <pre>{generateTailwindConfig(tokens)}</pre>}
-          </div>
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+            <TabsList className="w-full grid grid-cols-4 mb-4 text-[10px]">
+              <TabsTrigger value="tokens">tokens</TabsTrigger>
+              <TabsTrigger value="tailwind">tailwind</TabsTrigger>
+              <TabsTrigger value="design">DESIGN</TabsTrigger>
+              <TabsTrigger value="prompt">Prompt</TabsTrigger>
+            </TabsList>
+            <TabsContent value="tokens">
+              <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-4 font-mono text-[11px] overflow-x-auto text-zinc-300">
+                <pre>{JSON.stringify(tokens, null, 2)}</pre>
+              </div>
+            </TabsContent>
+            <TabsContent value="tailwind">
+              <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-4 font-mono text-[11px] overflow-x-auto text-zinc-300">
+                <pre>{generateTailwindConfig(tokens)}</pre>
+              </div>
+            </TabsContent>
+            <TabsContent value="design">
+              <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-4 font-mono text-[11px] overflow-x-auto text-zinc-300">
+                <pre>{generateDesignMd(tokens)}</pre>
+              </div>
+            </TabsContent>
+            <TabsContent value="prompt">
+              <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-4 font-mono text-[11px] overflow-x-auto text-zinc-300">
+                <pre>{generateAiPrompt(tokens)}</pre>
+              </div>
+            </TabsContent>
+          </Tabs>
         </aside>
       </div>
     </div>

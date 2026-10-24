@@ -1,76 +1,70 @@
 # WebPicks - Pick the System. Remake the Web.
 
-WebPicks is an ethical design system extraction platform and website remake studio that transforms live website URLs and screenshots into clean, accessible Next.js 15 & Tailwind CSS components, design tokens (`tokens.json`), and pre-formatted AI build briefs for Cursor, Claude Code, and ChatGPT.
+WebPicks is an ethical design system extraction platform and website remake studio that transforms live website URLs and UI screenshots into clean, accessible Next.js 15 & Tailwind CSS components, design tokens (`tokens.json`), and pre-formatted AI build briefs for Cursor, Claude Code, and ChatGPT.
 
 ---
 
-## 📂 File Structure
+## 📂 Repository File Structure
 
 ```
 .
+├── AGENTS.md
+├── PRD.md
+├── README.md
+├── RESEARCH.md
 ├── app/
 │   ├── api/
 │   │   ├── extract/              # Playwright headless browser extraction
 │   │   ├── extract-image/        # Vision AI screenshot analysis
-│   │   ├── payments/
-│   │   │   ├── checkout/         # Stripe & Paystack checkout router
-│   │   │   └── webhook/          # Payment status webhook listener
-│   │   └── projects/             # Project database CRUD operations
-│   ├── dashboard/                # Project dashboard with URL & Image import
-│   ├── login/                    # Passwordless & Google OAuth login
-│   ├── pricing/                  # Pricing page with Stripe/Paystack toggle
-│   ├── project/[id]/             # 3-panel Remake Studio workspace
-│   ├── error.tsx                 # Global error boundary
-│   ├── loading.tsx               # Global loading skeleton
+│   │   ├── payments/             # Stripe & Paystack checkout/webhooks
+│   │   └── projects/             # Supabase project DB CRUD routes
+│   ├── dashboard/                # Main user dashboard
+│   ├── login/                    # Supabase Auth & Google OAuth page
+│   ├── pricing/                  # Stripe vs Paystack pricing page
+│   ├── project/[id]/             # Remake Studio workspace
+│   ├── error.tsx                 # Next.js error boundary
+│   ├── loading.tsx               # Next.js skeleton loading page
 │   └── page.tsx                  # Marketing landing page
 ├── components/
 │   ├── HeaderNav.tsx             # Global header with auth state
-│   └── StudioClient.tsx          # Responsive 3-pane Remake Studio
+│   ├── StudioClient.tsx          # Responsive Remake Studio UI
+│   └── ui/                       # Shadcn UI primitives (button, card, input, tabs)
 ├── lib/
 │   ├── payments/
 │   │   ├── index.ts              # Unified PaymentProvider interface
-│   │   ├── paystack.ts           # Paystack (NGN) implementation
-│   │   └── stripe.ts             # Stripe (USD) implementation
+│   │   ├── paystack.ts           # Paystack (NGN) payment provider
+│   │   └── stripe.ts             # Stripe (USD) payment provider
 │   ├── supabase/
 │   │   ├── client.ts             # Browser Supabase client
 │   │   └── server.ts             # Server-side Supabase client
 │   └── utils.ts                  # WCAG calculation & zip generators
-├── public/
-├── schema.sql                    # PostgreSQL database schema & RLS rules
-├── .env.example                  # Environment variable reference
-├── README.md
-└── vercel.json                   # Vercel deployment config
+├── public/                       # Static public assets
+├── schema.sql                    # PostgreSQL schema & RLS security rules
+├── .env.example                  # Environment variable blueprint
+└── vercel.json                   # Vercel deployment configuration
 ```
 
 ---
 
-## ✨ Features
+## 💳 Payment Gateway Toggle (Stripe vs. Paystack)
 
-- **Ethical Design System Extractor:** Parses live URLs with headless Playwright without raw DOM or CSS code cloning.
-- **Vision AI Screenshot Reconstructor:** Transforms Dribbble shots, Figma designs, or screenshots into structured design tokens.
-- **3-Panel Remake Studio:**
-  - *Left:* Palette swatches with automated WCAG AA/AAA accessibility checks, font scale, and radii tokens.
-  - *Center:* Live interactive preview canvas with Dark, Light, Cyberpunk, and Emerald theme modes, inline `contentEditable` text, and viewport switching (Desktop, Tablet, Mobile).
-  - *Right:* Real copyable code panels for `tokens.json`, `tailwind.config.js`, `DESIGN.md`, and AI build prompts.
-- **Next.js 15 Starter Package Exporter:** Generates ready-to-run `.zip` packages via JSZip containing `tailwind.config.js`, `app/globals.css`, `lib/tokens.json`, `components/Hero.tsx`, and `README.md`.
-- **Multi-Gateway Payments:** Supports **Stripe (USD)** and **Paystack (NGN 🇳🇬)** with automatic pricing toggles.
+WebPicks features multi-provider global payment handling:
+- **Paystack (NGN 🇳🇬):** Automatically recommended or selectable for users in Nigeria/Africa paying in Nigerian Naira (`NGN`).
+- **Stripe (USD 🌐):** Default international gateway processing USD credit card subscriptions worldwide via Stripe Checkout.
 
 ---
 
-## 🛠️ Tech Stack
+## 📱 Responsive Mobile Remake Studio
 
-- **Framework:** Next.js 15 App Router (TypeScript, Turbopack)
-- **Styling:** Tailwind CSS, Lucide Icons, Sonner Toasts
-- **Database & Auth:** Supabase (PostgreSQL, Row Level Security, Auth)
-- **Extraction Engine:** Playwright Headless Browser & Vision AI Token Mapper
-- **Payments:** Stripe SDK & Paystack REST API
-- **Zip Packaging:** JSZip
+The Remake Studio workspace (`components/StudioClient.tsx`) adapts to all viewports:
+- **Mobile (< 768px):** Displays a compact header and renders as a 3-trigger tabbed workspace (`Style Guide`, `Preview Canvas`, `Export Code`) ensuring a clean single-column interface without horizontal scrolling.
+- **Desktop (≥ 768px):** Expands into an interactive 3-column studio with left palette tokens, central interactive canvas, and right live code tabs.
 
 ---
 
 ## 🚀 Setup & Installation
 
-1. **Clone & Install Dependencies:**
+1. **Clone Repository & Install Dependencies:**
    ```bash
    git clone https://github.com/your-org/webpicks.git
    cd webpicks
@@ -79,52 +73,34 @@ WebPicks is an ethical design system extraction platform and website remake stud
    ```
 
 2. **Environment Configuration:**
-   Copy `.env.example` to `.env.local` and fill in your keys:
+   Copy `.env.example` to `.env.local` and enter your Supabase, Stripe, and Paystack API keys:
    ```bash
    cp .env.example .env.local
    ```
 
-3. **Run Development Server:**
+3. **Database Initialization (`schema.sql`):**
+   Run `schema.sql` inside your Supabase PostgreSQL Editor to create the `projects` table and enable Row Level Security:
+   ```sql
+   CREATE TABLE IF NOT EXISTS public.projects (
+     id TEXT PRIMARY KEY,
+     user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+     title TEXT NOT NULL,
+     url TEXT,
+     image_url TEXT,
+     type TEXT NOT NULL CHECK (type IN ('url', 'image')),
+     tokens_json JSONB NOT NULL DEFAULT '{}'::jsonb,
+     screenshot_url TEXT,
+     theme TEXT DEFAULT 'dark',
+     status TEXT DEFAULT 'completed',
+     created_at TIMESTAMPTZ DEFAULT NOW()
+   );
+
+   ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
+   CREATE POLICY "Users can manage own projects" ON public.projects FOR ALL USING (auth.uid() = user_id OR user_id IS NULL);
+   ```
+
+4. **Run Development Server:**
    ```bash
    npm run dev
    ```
-   Navigate to [http://localhost:3000](http://localhost:3000).
-
----
-
-## 🗄️ Database Setup (`schema.sql`)
-
-Execute `schema.sql` inside your Supabase SQL Editor to initialize tables and Row Level Security:
-
-```sql
-CREATE TABLE IF NOT EXISTS public.projects (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-  title TEXT NOT NULL,
-  url TEXT,
-  image_url TEXT,
-  type TEXT NOT NULL CHECK (type IN ('url', 'image')),
-  tokens_json JSONB NOT NULL DEFAULT '{}'::jsonb,
-  screenshot_url TEXT,
-  theme TEXT DEFAULT 'dark',
-  status TEXT DEFAULT 'completed',
-  created_at TIMESTAMPTZ DEFAULT NOW()
-);
-
-ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can manage own projects" ON public.projects FOR ALL USING (auth.uid() = user_id);
-```
-
----
-
-## 💳 Payment Gateway Toggle (Stripe vs. Paystack)
-
-WebPicks features dual payment provider support:
-- **Stripe:** Handles USD billing for global users via Stripe Checkout sessions.
-- **Paystack:** Handles NGN (Nigerian Naira) transactions using Paystack's transaction initialization API. Users can select their preferred gateway directly on the `/pricing` page.
-
----
-
-## 🌐 Deployment (Vercel)
-
-The repository includes `vercel.json` configured for Next.js 15. Set all environment variables specified in `.env.example` inside your Vercel Project Settings before deploying.
+   Open [http://localhost:3000](http://localhost:3000).

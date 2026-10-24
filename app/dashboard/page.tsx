@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -24,6 +24,10 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<any[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
 
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
   const fetchProjects = async () => {
     try {
       const res = await fetch('/api/projects');
@@ -40,11 +44,6 @@ export default function DashboardPage() {
     e.preventDefault();
     if (!url) return;
 
-    if (projects.length >= 3) {
-      toast.error('Free tier quota reached (3/3 projects). Upgrade to Pro for unlimited extractions!');
-      return;
-    }
-
     setLoading(true);
     toast.info('Extracting design system with Playwright...');
 
@@ -56,6 +55,11 @@ export default function DashboardPage() {
       });
 
       const data = await res.json();
+
+      if (res.status === 403) {
+        toast.error(data.message || 'Quota reached! Upgrade to Pro for more extractions.');
+        return;
+      }
 
       if (!res.ok) {
         toast.error(data.error || 'Extraction failed');
@@ -77,11 +81,6 @@ export default function DashboardPage() {
   };
 
   const handleImageUpload = async (file: File) => {
-    if (projects.length >= 3) {
-      toast.error('Free tier quota reached (3/3 projects). Upgrade to Pro for unlimited extractions!');
-      return;
-    }
-
     setLoading(true);
     toast.info('Processing screenshot with Vision AI...');
 
@@ -95,6 +94,11 @@ export default function DashboardPage() {
       });
 
       const data = await res.json();
+
+      if (res.status === 403) {
+        toast.error(data.message || 'Quota reached! Upgrade to Pro for more extractions.');
+        return;
+      }
 
       if (!res.ok) {
         toast.error(data.error || 'Failed to analyze screenshot');
@@ -147,8 +151,8 @@ export default function DashboardPage() {
             {/* Quota Indicator */}
             <div className="flex items-center gap-3 bg-zinc-900 border border-white/10 px-4 py-2 rounded-xl text-xs">
               <div>
-                <div className="text-zinc-400 text-[10px] uppercase font-bold">Free Plan Quota</div>
-                <div className="font-bold text-white">{projects.length} / 3 Projects Used</div>
+                <div className="text-zinc-400 text-[10px] uppercase font-bold">Saved Projects</div>
+                <div className="font-bold text-white">{projects.length} Total Projects</div>
               </div>
               <Link
                 href="/pricing"

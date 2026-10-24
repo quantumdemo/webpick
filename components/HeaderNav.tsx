@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Layers, LogOut, User as UserIcon } from 'lucide-react';
+import { Layers, LogOut, User as UserIcon, Settings } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
 
 export function HeaderNav({ activePage }: { activePage?: string }) {
@@ -74,15 +74,16 @@ export function HeaderNav({ activePage }: { activePage?: string }) {
       <div className="flex items-center gap-3">
         {user ? (
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-zinc-900 border border-white/10 px-3 py-1.5 rounded-full text-xs">
+            <Link
+              href="/dashboard/profile"
+              className="flex items-center gap-2 bg-zinc-900 hover:bg-zinc-800 border border-white/10 px-3 py-1.5 rounded-full text-xs transition"
+            >
               <div className="w-5 h-5 rounded-full bg-indigo-600/30 text-indigo-400 flex items-center justify-center font-bold text-[10px]">
                 {user.name?.[0]?.toUpperCase() || <UserIcon className="w-3 h-3" />}
               </div>
               <span className="text-zinc-200 font-medium">{user.email}</span>
-              <span className="bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded">
-                Free
-              </span>
-            </div>
+              <Settings className="w-3.5 h-3.5 text-zinc-400" />
+            </Link>
 
             <button
               onClick={handleSignOut}

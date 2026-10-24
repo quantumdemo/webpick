@@ -4,7 +4,6 @@ import { createServerClient } from '@supabase/ssr'
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
-  // Ensure fingerprint cookie exists even for anonymous visitors on / route
   if (!request.cookies.has('webpick_fingerprint')) {
     const fp = crypto.randomUUID()
     supabaseResponse.cookies.set('webpick_fingerprint', fp, {
@@ -46,7 +45,8 @@ export async function middleware(request: NextRequest) {
   if (
     !user &&
     (request.nextUrl.pathname.startsWith('/dashboard') ||
-      request.nextUrl.pathname.startsWith('/project'))
+      request.nextUrl.pathname.startsWith('/project') ||
+      request.nextUrl.pathname.startsWith('/profile'))
   ) {
     return NextResponse.redirect(new URL('/login', request.url))
   }

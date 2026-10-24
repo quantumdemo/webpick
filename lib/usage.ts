@@ -26,13 +26,25 @@ export async function checkCanSnap(): Promise<{ allowed: boolean; remaining: num
     if (user) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('credits, is_pro')
+        .select('credits, is_pro, plan')
         .eq('id', user.id)
         .maybeSingle()
 
-      if (profile?.is_pro || (profile?.credits || 0) > 0) {
-        return { allowed: true, remaining: profile?.is_pro ? 999 : (profile?.credits || 10), needsAuth: false }
+      if (profile?.plan === 'team') {
+        return { allowed: true, remaining: 9999, needsAuth: false }
       }
+
+      if (profile?.is_pro || profile?.plan === 'pro') {
+        const remainingPro = profile?.credits ?? 50
+        if (remainingPro > 0) return { allowed: true, remaining: remainingPro, needsAuth: false }
+        return { allowed: false, remaining: 0, needsAuth: false }
+      }
+
+      const remainingFree = profile?.credits ?? 10
+      if (remainingFree > 0) {
+        return { allowed: true, remaining: remainingFree, needsAuth: false }
+      }
+
       return { allowed: false, remaining: 0, needsAuth: false }
     } else {
       const fp = await getFingerprint()
@@ -64,11 +76,11 @@ export async function incrementSnap() {
     if (user) {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('credits, is_pro')
+        .select('credits, is_pro, plan')
         .eq('id', user.id)
         .maybeSingle()
 
-      if (profile && !profile.is_pro && (profile.credits || 0) > 0) {
+      if (profile && profile.plan !== 'team' && (profile.credits || 0) > 0) {
         await supabase
           .from('profiles')
           .update({ credits: profile.credits - 1 })

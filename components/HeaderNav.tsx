@@ -8,33 +8,38 @@ import { createClient } from '@/lib/supabase/client';
 
 export function HeaderNav({ activePage }: { activePage?: string }) {
   const router = useRouter();
-  const supabase = createClient();
   const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
 
   useEffect(() => {
     async function checkUser() {
       try {
-        const { data } = await supabase.auth.getUser();
-        if (data?.user) {
-          setUser({
-            email: data.user.email,
-            name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
-          });
-        } else {
-          setUser(null);
+        if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+          const supabase = createClient();
+          const { data } = await supabase.auth.getUser();
+          if (data?.user) {
+            setUser({
+              email: data.user.email,
+              name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
+            });
+            return;
+          }
         }
       } catch (err) {
-        setUser(null);
+        // Safe catch
       }
+      setUser(null);
     }
     checkUser();
-  }, [supabase]);
+  }, []);
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut();
+      if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+        const supabase = createClient();
+        await supabase.auth.signOut();
+      }
     } catch (e) {
-      // Ignore
+      // Safe catch
     }
     setUser(null);
     router.push('/login');

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { chromium } from 'playwright';
 import { z } from 'zod';
 import { createClient } from '@/lib/supabase/server';
+import { checkCanSnap, incrementSnap } from '@/lib/usage';
 
 const extractSchema = z.object({
   url: z.string().url({ message: 'A valid HTTP/HTTPS URL is required' }),
@@ -10,6 +11,20 @@ const extractSchema = z.object({
 export async function POST(req: Request) {
   let browser = null;
   try {
+    const snapCheck = await checkCanSnap();
+    if (!snapCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: 'LIMIT_REACHED',
+          message: snapCheck.needsAuth
+            ? "You've used 3 free snaps. Sign up to get more extractions!"
+            : 'You have exhausted your project credits. Upgrade to Pro for unlimited extractions!',
+          needsAuth: snapCheck.needsAuth,
+        },
+        { status: 403 }
+      );
+    }
+
     const body = await req.json();
     const validation = extractSchema.safeParse(body);
 
@@ -125,6 +140,7 @@ export async function POST(req: Request) {
       };
 
       await supabase.from('projects').insert([projectData]);
+      await incrementSnap();
 
       return NextResponse.json({ success: true, project: projectData });
     } catch (browserError) {

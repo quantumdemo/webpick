@@ -11,11 +11,17 @@ export default function LoginPage() {
   const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const handleEmailAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (authMode === 'signup' && !agreed) {
+      setMessage({ type: 'error', text: 'You must agree to the Terms of Service and Privacy Policy.' });
+      return;
+    }
+
     setLoading(true);
     setMessage(null);
 
@@ -69,7 +75,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0A0B0E] text-white flex flex-col justify-between selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-[#0A0B0E] text-white flex flex-col justify-between selection:bg-indigo-500/30 font-sans">
       {/* Background Glow */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-indigo-600/10 rounded-full blur-[120px]" />
@@ -93,7 +99,7 @@ export default function LoginPage() {
 
       {/* Main Login Box */}
       <main className="flex-1 flex items-center justify-center p-6 relative z-10">
-        <div className="w-full max-w-md space-y-8 bg-zinc-900/60 border border-white/10 p-8 rounded-2xl backdrop-blur-xl shadow-2xl">
+        <div className="w-full max-w-md space-y-6 bg-zinc-900/60 border border-white/10 p-8 rounded-2xl backdrop-blur-xl shadow-2xl">
           <div className="text-center space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-medium">
               <Sparkles className="w-3.5 h-3.5" />
@@ -189,9 +195,31 @@ export default function LoginPage() {
                 </div>
               </div>
 
+              {authMode === 'signup' && (
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="terms"
+                    checked={agreed}
+                    onChange={(e) => setAgreed(e.target.checked)}
+                    className="rounded border-zinc-700 bg-zinc-950 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label htmlFor="terms" className="text-[11px] text-zinc-400">
+                    I agree to the{' '}
+                    <Link href="/terms" className="text-indigo-400 underline" target="_blank">
+                      Terms
+                    </Link>{' '}
+                    and{' '}
+                    <Link href="/privacy" className="text-indigo-400 underline" target="_blank">
+                      Privacy Policy
+                    </Link>
+                  </label>
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={loading}
+                disabled={loading || (authMode === 'signup' && !agreed)}
                 className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-lg transition shadow-lg shadow-indigo-600/25 flex items-center justify-center gap-2 text-sm disabled:opacity-50"
               >
                 {loading ? (
@@ -205,9 +233,15 @@ export default function LoginPage() {
             </form>
           </div>
 
-          <div className="flex items-center justify-center gap-2 text-[11px] text-zinc-500">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Encrypted Supabase SSR authentication</span>
+          <div className="text-center text-[11px] text-zinc-400 pt-2 border-t border-white/10">
+            By continuing, you agree to our{' '}
+            <Link href="/terms" className="underline text-zinc-300">
+              Terms of Service
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="underline text-zinc-300">
+              Privacy Policy
+            </Link>.
           </div>
         </div>
       </main>

@@ -4,6 +4,15 @@ import { createServerClient } from '@supabase/ssr'
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request })
 
+  // Ensure fingerprint cookie exists even for anonymous visitors on / route
+  if (!request.cookies.has('webpick_fingerprint')) {
+    const fp = crypto.randomUUID()
+    supabaseResponse.cookies.set('webpick_fingerprint', fp, {
+      maxAge: 60 * 60 * 24 * 365,
+      httpOnly: false,
+    })
+  }
+
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
@@ -46,5 +55,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/dashboard/:path*', '/project/:path*'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }

@@ -4,18 +4,17 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
-  Layers,
+  Globe,
   Sparkles,
   ArrowRight,
   ShieldCheck,
-  Check,
   Code2,
   Cpu,
   Palette,
   FileCode,
   Zap,
-  Globe,
-  UploadCloud
+  Lock,
+  X
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 
@@ -23,6 +22,12 @@ export default function LandingPage() {
   const router = useRouter();
   const [urlInput, setUrlInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [remainingSnaps, setRemainingSnaps] = useState<number | null>(3);
+  const [paywallModal, setPaywallModal] = useState<{ open: boolean; needsAuth: boolean; message: string }>({
+    open: false,
+    needsAuth: false,
+    message: '',
+  });
 
   const handleExtract = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -40,12 +45,23 @@ export default function LandingPage() {
 
       const data = await res.json();
 
+      if (res.status === 403) {
+        setPaywallModal({
+          open: true,
+          needsAuth: data.needsAuth ?? true,
+          message: data.message || "You've used 3 free snaps. Sign up or upgrade to get more!",
+        });
+        return;
+      }
+
       if (!res.ok) {
         toast.error(data.error || 'Failed to extract design tokens');
         return;
       }
 
       toast.success('Design tokens extracted! Opening Remake Studio...');
+      setRemainingSnaps((prev) => (prev && prev > 0 ? prev - 1 : 0));
+
       if (data.project?.id) {
         router.push(`/project/${data.project.id}`);
       } else {
@@ -66,7 +82,7 @@ export default function LandingPage() {
       <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between sticky top-0 bg-[#0A0B0E]/80 backdrop-blur-md z-50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
-            <Layers className="w-5 h-5" />
+            <Sparkles className="w-5 h-5" />
           </div>
           <span className="text-xl font-bold tracking-tight">WebPicks</span>
         </div>
@@ -88,12 +104,20 @@ export default function LandingPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-24 px-6 text-center max-w-5xl mx-auto space-y-8 relative overflow-hidden">
+      <section className="py-20 px-6 text-center max-w-5xl mx-auto space-y-8 relative overflow-hidden">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] bg-indigo-600/10 rounded-full blur-[140px] pointer-events-none" />
 
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
-          <Sparkles className="w-3.5 h-3.5" />
-          Ethical Design Extraction & Remake Studio
+        <div className="flex flex-col items-center gap-3">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-xs font-semibold">
+            <Sparkles className="w-3.5 h-3.5" />
+            Ethical Design Extraction & Remake Studio
+          </div>
+
+          {remainingSnaps !== null && (
+            <span className="text-[11px] font-mono text-zinc-400 bg-zinc-900 border border-white/10 px-3 py-1 rounded-full">
+              {remainingSnaps > 0 ? `✨ ${remainingSnaps} free snaps remaining` : '⚠️ 0 free snaps left'}
+            </span>
+          )}
         </div>
 
         <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight leading-[1.1]">
@@ -192,9 +216,64 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Paywall / SignUp Modal */}
+      {paywallModal.open && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 z-50">
+          <div className="bg-zinc-900 border border-white/10 p-8 rounded-2xl max-w-md w-full space-y-6 text-center relative shadow-2xl">
+            <button
+              onClick={() => setPaywallModal({ open: false, needsAuth: false, message: '' })}
+              className="absolute top-4 right-4 text-zinc-400 hover:text-white"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="w-12 h-12 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 text-indigo-400 flex items-center justify-center mx-auto">
+              <Lock className="w-6 h-6" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold">Limit Reached</h3>
+              <p className="text-xs text-zinc-400">{paywallModal.message}</p>
+            </div>
+
+            {paywallModal.needsAuth ? (
+              <Link
+                href="/login?reason=limit"
+                className="block w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-600/30"
+              >
+                Sign Up / Sign In for More Snaps
+              </Link>
+            ) : (
+              <div className="space-y-3">
+                <Link
+                  href="/pricing"
+                  className="block w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl text-xs transition shadow-lg shadow-indigo-600/30"
+                >
+                  Upgrade to Pro ($12/mo)
+                </Link>
+                <Link
+                  href="/pricing"
+                  className="block w-full bg-emerald-600 hover:bg-emerald-500 text-white font-semibold py-3 rounded-xl text-xs transition"
+                >
+                  Upgrade via Paystack (₦15,000/mo)
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
-      <footer className="border-t border-white/10 py-8 px-6 text-center text-xs text-zinc-500 mt-auto">
-        © 2025 WebPicks Inc. All rights reserved. Ethical Design Extraction Platform.
+      <footer className="border-t border-white/10 py-8 px-6 text-center text-xs text-zinc-500 mt-auto flex flex-col sm:flex-row items-center justify-between max-w-6xl mx-auto w-full gap-4">
+        <div>© 2025 WebPicks Inc. All rights reserved. Ethical Remake Studio.</div>
+        <div className="flex gap-4">
+          <Link href="/terms" className="hover:text-zinc-300 underline">
+            Terms of Service
+          </Link>
+          <Link href="/privacy" className="hover:text-zinc-300 underline">
+            Privacy Policy
+          </Link>
+        </div>
       </footer>
     </div>
   );

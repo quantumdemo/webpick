@@ -10,6 +10,8 @@ export interface ProjectRecord {
   user_id?: string;
   url: string;
   name: string;
+  is_image_import?: boolean;
+  image_preview?: string;
   tokens_json: {
     colors: Array<{ hex: string; rgb: string; name: string }>;
     typography: {

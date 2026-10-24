@@ -5,17 +5,32 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { mockDb } from "@/lib/mockDb";
 import { useUserStore } from "@/lib/store";
-import { Layers, Plus, ExternalLink, Calendar, Zap, ArrowRight, Sparkles, FolderKanban } from "lucide-react";
+import {
+  Layers,
+  Plus,
+  Calendar,
+  Zap,
+  ArrowRight,
+  Sparkles,
+  FolderKanban,
+  Link as LinkIcon,
+  Image as ImageIcon,
+  UploadCloud,
+} from "lucide-react";
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, importsRemaining } = useUserStore();
+
+  const [importMode, setImportMode] = useState<"url" | "image">("url");
   const [urlInput, setUrlInput] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const projects = mockDb.listProjects();
 
-  const handleExtract = async (e: React.FormEvent) => {
+  const handleUrlExtract = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!urlInput.trim()) return;
     setLoading(true);
@@ -36,6 +51,43 @@ export default function DashboardPage() {
     } catch (err) {
       console.error(err);
       alert("Extraction request error");
+      setLoading(false);
+    }
+  };
+
+  const handleImageFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImageExtract = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!imagePreview) return;
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/extract-image", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ imageBase64: imagePreview, filename: imageFile?.name || "dribbble-shot.png" }),
+      });
+      const data = await res.json();
+      if (data.id) {
+        router.push(`/project/${data.id}`);
+      } else {
+        alert("Vision extraction failed");
+        setLoading(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Image extraction request error");
       setLoading(false);
     }
   };
@@ -66,35 +118,91 @@ export default function DashboardPage() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-10 flex-1 w-full">
-        {/* Welcome Banner */}
+        {/* Welcome & Import Box */}
         <div className="mb-10 p-8 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800 relative overflow-hidden">
           <div className="max-w-2xl">
             <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">
               Welcome back, {user?.name || "Creator"}
             </h1>
             <p className="text-slate-400 text-sm mb-6">
-              Import a new website reference to extract design tokens or continue working on your saved Remake Studio projects.
+              Import a website URL or drop a Dribbble / Figma design screenshot to reconstruct clean Design DNA.
             </p>
 
-            {/* Quick URL Import Box */}
-            <form onSubmit={handleExtract} className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="text"
-                placeholder="Enter URL (e.g. stripe.com)..."
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                required
-                className="flex-1 bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none transition-colors"
-              />
+            {/* Mode Selector Tabs */}
+            <div className="inline-flex p-1 bg-slate-950 border border-slate-800 rounded-xl mb-4 text-xs font-medium">
               <button
-                type="submit"
-                disabled={loading}
-                className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-md shadow-indigo-600/20"
+                onClick={() => setImportMode("url")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
+                  importMode === "url" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+                }`}
               >
-                {loading ? <Zap className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
-                <span>Import Design</span>
+                <LinkIcon className="w-3.5 h-3.5" />
+                <span>URL Import</span>
               </button>
-            </form>
+              <button
+                onClick={() => setImportMode("image")}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-colors ${
+                  importMode === "image" ? "bg-indigo-600 text-white" : "text-slate-400 hover:text-white"
+                }`}
+              >
+                <ImageIcon className="w-3.5 h-3.5" />
+                <span>Image Import (Dribbble / Figma)</span>
+              </button>
+            </div>
+
+            {/* URL Import Form */}
+            {importMode === "url" ? (
+              <form onSubmit={handleUrlExtract} className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  placeholder="Enter URL (e.g. stripe.com)..."
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  required
+                  className="flex-1 bg-slate-950 border border-slate-800 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 focus:outline-none transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm px-5 py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-md shadow-indigo-600/20"
+                >
+                  {loading ? <Zap className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+                  <span>Import Design</span>
+                </button>
+              </form>
+            ) : (
+              /* Image Upload Form */
+              <form onSubmit={handleImageExtract} className="space-y-4">
+                <label className="border-2 border-dashed border-slate-800 hover:border-indigo-500/60 rounded-2xl p-6 flex flex-col items-center justify-center cursor-pointer bg-slate-950/60 transition-colors">
+                  <input type="file" accept="image/*" onChange={handleImageFileChange} className="hidden" />
+                  {imagePreview ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <img src={imagePreview} alt="Preview" className="h-28 rounded-lg object-contain shadow-md" />
+                      <span className="text-xs text-indigo-400 font-medium">{imageFile?.name}</span>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-2 text-center">
+                      <UploadCloud className="w-8 h-8 text-indigo-400 mb-1" />
+                      <span className="text-sm font-semibold text-slate-200">
+                        Drop a Dribbble shot, Figma frame, or website screenshot
+                      </span>
+                      <span className="text-xs text-slate-500">Supports PNG, JPG, WebP up to 10MB</span>
+                    </div>
+                  )}
+                </label>
+
+                {imagePreview && (
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium text-sm py-3 rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20"
+                  >
+                    {loading ? <Zap className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    <span>AI Reconstruct Design System</span>
+                  </button>
+                )}
+              </form>
+            )}
           </div>
         </div>
 
@@ -113,7 +221,7 @@ export default function DashboardPage() {
             <Layers className="w-10 h-10 text-slate-600 mx-auto mb-3" />
             <h3 className="text-base font-semibold text-slate-300 mb-1">No Projects Yet</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto mb-6">
-              Paste a website URL above to extract your first Design DNA project.
+              Paste a website URL or drop a screenshot above to extract your first Design DNA project.
             </p>
           </div>
         ) : (
@@ -123,12 +231,18 @@ export default function DashboardPage() {
                 key={project.id}
                 className="group rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-slate-700 transition-all flex flex-col overflow-hidden shadow-lg hover:shadow-indigo-500/5"
               >
-                {/* Mock Thumbnail Banner */}
+                {/* Thumbnail Banner */}
                 <div className="h-36 bg-gradient-to-br from-slate-950 to-indigo-950/30 border-b border-slate-800/80 p-4 flex flex-col justify-between relative">
                   <div className="flex items-center justify-between">
-                    <span className="px-2.5 py-1 rounded-md bg-slate-900/80 border border-slate-800 text-[11px] font-mono text-indigo-300">
-                      {project.url.replace("https://", "").replace("http://", "")}
-                    </span>
+                    {project.is_image_import ? (
+                      <span className="px-2.5 py-1 rounded-md bg-purple-500/20 border border-purple-500/30 text-[11px] font-mono text-purple-300 flex items-center gap-1">
+                        <ImageIcon className="w-3 h-3" /> Image Import
+                      </span>
+                    ) : (
+                      <span className="px-2.5 py-1 rounded-md bg-slate-900/80 border border-slate-800 text-[11px] font-mono text-indigo-300">
+                        {project.url.replace("https://", "").replace("http://", "")}
+                      </span>
+                    )}
                     <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-sm shadow-emerald-400" />
                   </div>
 

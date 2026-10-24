@@ -28,6 +28,8 @@ import {
   Moon,
   Sliders,
   AlertCircle,
+  Image as ImageIcon,
+  Bot,
 } from "lucide-react";
 
 function StudioContent() {
@@ -250,15 +252,21 @@ Requirements:
 
           <div className="flex items-center gap-2 text-xs">
             <span className="font-semibold text-slate-200">{project.name}</span>
-            <a
-              href={project.url}
-              target="_blank"
-              rel="noreferrer"
-              className="text-slate-500 hover:text-slate-300 flex items-center gap-1"
-            >
-              <span>{project.url.replace("https://", "")}</span>
-              <ExternalLink className="w-3 h-3" />
-            </a>
+            {project.is_image_import ? (
+              <span className="px-2 py-0.5 rounded bg-purple-500/20 border border-purple-500/30 text-purple-300 text-[10px] font-mono flex items-center gap-1">
+                <Bot className="w-3 h-3" /> AI Reconstructed from Image
+              </span>
+            ) : (
+              <a
+                href={project.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-slate-500 hover:text-slate-300 flex items-center gap-1"
+              >
+                <span>{project.url.replace("https://", "")}</span>
+                <ExternalLink className="w-3 h-3" />
+              </a>
+            )}
           </div>
         </div>
 
@@ -483,7 +491,13 @@ Requirements:
               {/* Hero Component */}
               <div className="space-y-6 text-center max-w-xl mx-auto">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border border-indigo-500/30 bg-indigo-500/10 text-indigo-300">
-                  <span>Reference: {project.name}</span>
+                  {project.is_image_import ? (
+                    <span className="flex items-center gap-1 text-purple-300">
+                      <Bot className="w-3.5 h-3.5" /> AI Reconstructed from Screenshot
+                    </span>
+                  ) : (
+                    <span>Reference: {project.name}</span>
+                  )}
                 </div>
 
                 {/* Inline Editable Heading */}

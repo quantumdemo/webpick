@@ -12,3 +12,67 @@
 - Partial Prefetching enabled
 
  GET /project/demo-linear 200 in 1369ms (next.js: 353ms, generate-params: 610ms, application-code: 407ms)
+ GET /project/demo-linear 200 in 598ms (next.js: 43ms, generate-params: 75ms, application-code: 480ms)
+[browser] A tree hydrated but some attributes of the server rendered HTML didn't match the client properties. This won't be patched up. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <SegmentViewNode type="page" pagePath="project/[i...">
+      <SegmentTrieNode>
+      <ClientPageRoot Component={function ProjectStudioPage} serverProvidedParams={null}>
+        <ProjectStudioPage params={Promise} searchParams={Promise}>
+          <Suspense fallback={<div>}>
+            <StudioContent>
+              <div className="min-h-scre...">
+                <header>
+                <div className="flex-1 fle...">
+                  <aside>
+                  <main className="flex-1 bg-...">
+                    <div>
+                    <div className="transition..." style={{...}}>
+                      <div>
+                      <div className="p-8 sm:p-1...">
+                        <div className="space-y-6 ...">
+                          <div>
+                          <div className="group rela...">
+                            <h1
+                              contentEditable={true}
+                              suppressContentEditableWarning={true}
+                              onBlur={function onBlur}
+                              className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight focus:outlin..."
+                              style={{
++                               fontFamily: "Inter"
++                               color: "#F8FAFC"
+-                               color: "rgb(248, 250, 252)"
+-                               font-family: "Inter"
+-                               caret-color: "transparent"
+                              }}
+                            >
++                             Re-Architect Web Apps Faster
+                            ...
+                          <div className="group rela...">
+                            <p
+                              contentEditable={true}
+                              suppressContentEditableWarning={true}
+                              onBlur={function onBlur}
+                              className="text-sm sm:text-base leading-relaxed focus:outline-none focus:ring-2 focus:ri..."
+                              style={{
++                               color: "#F8FAFC"
+-                               color: "rgb(248, 250, 252)"
+-                               caret-color: "transparent"
+                              }}
+                            >
++                             {"Build clean Next.js & Tailwind CSS interfaces directly from extracted design systems."}
+                          ...
+                        ...
+                  ...
+    ...

@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS public.users (
 );
 
 CREATE TABLE IF NOT EXISTS public.projects (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  id TEXT PRIMARY KEY,
   user_id UUID REFERENCES public.users(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   url TEXT,
@@ -33,4 +33,4 @@ ALTER TABLE public.projects ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can read own data" ON public.users FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update own data" ON public.users FOR UPDATE USING (auth.uid() = id);
 
-CREATE POLICY "Users can manage own projects" ON public.projects FOR ALL USING (auth.uid() = user_id);
+CREATE POLICY "Users can manage own projects" ON public.projects FOR ALL USING (auth.uid() = user_id OR user_id IS NULL);

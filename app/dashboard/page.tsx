@@ -1,34 +1,28 @@
-'use me';
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-import { HeaderNav } from '@/components/HeaderNav';
+import { useRouter } from 'next/navigation';
 import {
   Globe,
   UploadCloud,
   Sparkles,
   ArrowRight,
-  Plus,
   Trash2,
-  ExternalLink,
   Search,
-  Code2,
   Layers,
   AlertTriangle
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
+import { HeaderNav } from '@/components/HeaderNav';
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'url' | 'image'>('url');
   const [url, setUrl] = useState('');
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState<any[]>([]);
   const [deleteId, setDeleteId] = useState<string | null>(null);
-
-  useEffect(() => {
-    fetchProjects();
-  }, []);
 
   const fetchProjects = async () => {
     try {
@@ -52,7 +46,7 @@ export default function DashboardPage() {
     }
 
     setLoading(true);
-    toast.info('Extracting design system with headless Playwright engine...');
+    toast.info('Extracting design system with Playwright...');
 
     try {
       const res = await fetch('/api/extract', {
@@ -70,7 +64,11 @@ export default function DashboardPage() {
 
       toast.success('Design system extracted successfully!');
       setUrl('');
-      fetchProjects();
+      if (data.project?.id) {
+        router.push(`/project/${data.project.id}`);
+      } else {
+        fetchProjects();
+      }
     } catch (err: any) {
       toast.error(err.message || 'Error running extraction');
     } finally {
@@ -85,7 +83,7 @@ export default function DashboardPage() {
     }
 
     setLoading(true);
-    toast.info('Processing screenshot with Vision AI Token Engine...');
+    toast.info('Processing screenshot with Vision AI...');
 
     try {
       const formData = new FormData();
@@ -104,7 +102,11 @@ export default function DashboardPage() {
       }
 
       toast.success('Design tokens reconstructed from image!');
-      fetchProjects();
+      if (data.project?.id) {
+        router.push(`/project/${data.project.id}`);
+      } else {
+        fetchProjects();
+      }
     } catch (err) {
       toast.error('Failed to upload image');
     } finally {

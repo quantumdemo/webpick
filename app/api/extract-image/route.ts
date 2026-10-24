@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 
 export async function POST(req: Request) {
   try {
@@ -34,8 +34,12 @@ export async function POST(req: Request) {
       radii: ['8px', '16px', '9999px'],
     };
 
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
     const projectData = {
       id: `proj-${Date.now()}`,
+      user_id: user?.id || null,
       title: formattedTitle,
       type: 'image',
       tokens_json: tokens,
@@ -44,12 +48,7 @@ export async function POST(req: Request) {
       created_at: new Date().toISOString(),
     };
 
-    try {
-      const supabase = createServerClient();
-      await supabase.from('projects').insert([projectData]);
-    } catch (dbErr) {
-      // Fallback handled gracefully
-    }
+    await supabase.from('projects').insert([projectData]);
 
     return NextResponse.json({ success: true, project: projectData });
   } catch (error: unknown) {

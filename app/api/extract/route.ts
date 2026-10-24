@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { chromium } from 'playwright';
 import { z } from 'zod';
-import { createServerClient } from '@/lib/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 
 const extractSchema = z.object({
   url: z.string().url({ message: 'A valid HTTP/HTTPS URL is required' }),
@@ -109,8 +109,12 @@ export async function POST(req: Request) {
       const hostname = new URL(url).hostname.replace('www.', '');
       const title = hostname.charAt(0).toUpperCase() + hostname.slice(1);
 
+      const supabase = await createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
       const projectData = {
         id: `proj-${Date.now()}`,
+        user_id: user?.id || null,
         title,
         url,
         type: 'url',
@@ -120,12 +124,7 @@ export async function POST(req: Request) {
         created_at: new Date().toISOString(),
       };
 
-      try {
-        const supabase = createServerClient();
-        await supabase.from('projects').insert([projectData]);
-      } catch (dbErr) {
-        // Fallback handled gracefully
-      }
+      await supabase.from('projects').insert([projectData]);
 
       return NextResponse.json({ success: true, project: projectData });
     } catch (browserError) {

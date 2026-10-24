@@ -3,46 +3,41 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Layers, LogOut, User as UserIcon, Sparkles } from 'lucide-react';
-import { supabase } from '@/lib/supabase/client';
+import { Layers, LogOut, User as UserIcon } from 'lucide-react';
+import { createClient } from '@/lib/supabase/client';
 
 export function HeaderNav({ activePage }: { activePage?: string }) {
   const router = useRouter();
+  const supabase = createClient();
   const [user, setUser] = useState<{ email?: string; name?: string } | null>(null);
 
   useEffect(() => {
     async function checkUser() {
       try {
-        if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://placeholder.supabase.co') {
-          const { data } = await supabase.auth.getUser();
-          if (data.user) {
-            setUser({
-              email: data.user.email,
-              name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
-            });
-            return;
-          }
+        const { data } = await supabase.auth.getUser();
+        if (data?.user) {
+          setUser({
+            email: data.user.email,
+            name: data.user.user_metadata?.full_name || data.user.email?.split('@')[0],
+          });
+        } else {
+          setUser(null);
         }
       } catch (err) {
-        console.warn('Auth check error:', err);
+        setUser(null);
       }
-
-      // Default fallback logged-in state for preview smoothness
-      setUser({ email: 'alex@company.com', name: 'Alex' });
     }
     checkUser();
-  }, []);
+  }, [supabase]);
 
   const handleSignOut = async () => {
     try {
-      if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_URL !== 'https://placeholder.supabase.co') {
-        await supabase.auth.signOut();
-      }
+      await supabase.auth.signOut();
     } catch (e) {
-      console.warn(e);
+      // Ignore
     }
     setUser(null);
-    router.push('/');
+    router.push('/login');
   };
 
   return (

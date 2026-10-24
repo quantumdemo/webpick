@@ -1,0 +1,20 @@
+{
+  "renders": [
+    {
+      "source": "app/page.tsx",
+      "path": "/"
+    },
+    {
+      "source": "app/dashboard/page.tsx",
+      "path": "/dashboard"
+    },
+    {
+      "source": "app/pricing/page.tsx",
+      "path": "/pricing"
+    },
+    {
+      "source": "app/login/page.tsx",
+      "path": "/login"
+    }
+  ]
+}

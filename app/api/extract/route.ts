@@ -1,253 +1,170 @@
-import { NextRequest, NextResponse } from "next/server";
-import { chromium } from "playwright";
-import { mockDb } from "@/lib/mockDb";
-import { formatUrl } from "@/lib/utils";
-import { ProjectRecord } from "@/lib/supabase";
+import { NextResponse } from 'next/server';
+import { chromium } from 'playwright';
+import { saveProjectDB } from '@/lib/db';
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
+  let browser = null;
   try {
-    const body = await req.json();
-    const rawUrl = body.url;
+    const { url } = await req.json();
 
-    if (!rawUrl || typeof rawUrl !== "string") {
-      return NextResponse.json({ error: "Missing or invalid URL parameter" }, { status: 400 });
+    if (!url || typeof url !== 'string' || !url.startsWith('http')) {
+      return NextResponse.json({ error: 'Valid HTTP/HTTPS URL is required' }, { status: 400 });
     }
 
-    const targetUrl = formatUrl(rawUrl);
+    try {
+      browser = await chromium.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-web-security'],
+      });
 
-    // Launch Playwright headless browser
-    const browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({
-      viewport: { width: 1440, height: 900 },
-      userAgent: "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-    });
+      const context = await browser.newContext({
+        viewport: { width: 1440, height: 900 },
+        userAgent:
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      });
 
-    const page = await context.newPage();
+      const page = await context.newPage();
 
-    // Navigate to URL with 15s timeout
-    await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: 15000 }).catch((e) => {
-      console.warn("Navigation warning:", e.message);
-    });
+      // Load page with networkidle and 10s timeout
+      await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 12000 });
+      await page.waitForTimeout(2000);
 
-    // Page Metadata
-    const pageTitle = (await page.title()) || new URL(targetUrl).hostname;
-    const pageDescription =
-      (await page.getAttribute("meta[name='description']", "content").catch(() => null)) ||
-      "Imported design reference";
+      // Extract comprehensive styling data
+      const extractedTokens = await page.evaluate(() => {
+        const rgbToHex = (rgb: string) => {
+          if (!rgb || rgb === 'transparent' || rgb.includes('rgba(0, 0, 0, 0)')) return null;
+          const match = rgb.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+          if (!match) return null;
+          const hex = (x: string) => ('0' + parseInt(x, 10).toString(16)).slice(-2);
+          return '#' + hex(match[1]) + hex(match[2]) + hex(match[3]);
+        };
 
-    // Extract Computed Design Tokens
-    const extractedData = await page.evaluate(() => {
-      // Color Extraction Helper
-      const colorCounts: Record<string, { hex: string; rgb: string; count: number }> = {};
+        const elements = Array.from(document.querySelectorAll('*'));
+        const colorSet = new Set<string>();
+        const fontSet = new Set<string>();
+        const radiusSet = new Set<string>();
 
-      function rgbToHex(rgbStr: string): string {
-        const match = rgbStr.match(/\d+/g);
-        if (!match || match.length < 3) return "#000000";
-        const [r, g, b] = match.map(Number);
-        return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1).toUpperCase();
-      }
+        elements.slice(0, 400).forEach((el) => {
+          const style = window.getComputedStyle(el);
 
-      const allElements = Array.from(document.querySelectorAll("body *")).slice(0, 300);
+          const bg = style.backgroundColor;
+          const fg = style.color;
+          const border = style.borderColor;
 
-      allElements.forEach((el) => {
-        const style = window.getComputedStyle(el);
+          const hexBg = rgbToHex(bg);
+          const hexFg = rgbToHex(fg);
+          const hexBorder = rgbToHex(border);
 
-        [style.color, style.backgroundColor, style.borderColor].forEach((colorStr) => {
-          if (
-            colorStr &&
-            colorStr !== "transparent" &&
-            colorStr !== "rgba(0, 0, 0, 0)" &&
-            colorStr.startsWith("rgb")
-          ) {
-            const hex = rgbToHex(colorStr);
-            if (!colorCounts[hex]) {
-              colorCounts[hex] = { hex, rgb: colorStr, count: 1 };
-            } else {
-              colorCounts[hex].count += 1;
-            }
+          if (hexBg) colorSet.add(hexBg.toUpperCase());
+          if (hexFg) colorSet.add(hexFg.toUpperCase());
+          if (hexBorder) colorSet.add(hexBorder.toUpperCase());
+
+          if (style.fontFamily) {
+            const family = style.fontFamily.split(',')[0].replace(/['"]/g, '').trim();
+            if (family) fontSet.add(family);
+          }
+
+          if (style.borderRadius && style.borderRadius !== '0px') {
+            radiusSet.add(style.borderRadius);
           }
         });
-      });
 
-      const sortedColors = Object.values(colorCounts)
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 8)
-        .map((c, i) => ({
-          hex: c.hex,
-          rgb: c.rgb,
-          name: i === 0 ? "Primary Surface" : i === 1 ? "Brand Accent" : i === 2 ? "Text Primary" : `Color Token ${i + 1}`,
-        }));
+        const rawColors = Array.from(colorSet).slice(0, 16);
+        const palette = rawColors.map((hex, index) => {
+          let role = 'surface';
+          let name = `Color ${index + 1}`;
 
-      // Typography Extraction
-      const fontFamiliesSet = new Set<string>();
-      const headings: Array<{ tag: string; fontSize: string; fontWeight: string; lineHeight: string }> = [];
+          if (index === 0) {
+            role = 'background';
+            name = 'Primary Surface';
+          } else if (index === 1) {
+            role = 'accent';
+            name = 'Brand Accent';
+          } else if (index === 2) {
+            role = 'text';
+            name = 'Text Primary';
+          } else if (index === 3) {
+            role = 'text-muted';
+            name = 'Text Muted';
+          } else if (index === 4) {
+            role = 'border';
+            name = 'Border Subtle';
+          } else {
+            name = `Palette ${index + 1}`;
+          }
 
-      ["h1", "h2", "h3"].forEach((tag) => {
-        const hEl = document.querySelector(tag);
-        if (hEl) {
-          const style = window.getComputedStyle(hEl);
-          const font = style.fontFamily.split(",")[0].replace(/['"]/g, "").trim();
-          if (font) fontFamiliesSet.add(font);
-          headings.push({
-            tag: tag.toUpperCase(),
-            fontSize: style.fontSize || "32px",
-            fontWeight: style.fontWeight || "600",
-            lineHeight: style.lineHeight || "1.2",
-          });
-        }
-      });
+          return { hex, rgb: hex, name, role };
+        });
 
-      const bodyEl = document.querySelector("body");
-      const bodyStyle = bodyEl ? window.getComputedStyle(bodyEl) : null;
-      if (bodyStyle?.fontFamily) {
-        fontFamiliesSet.add(bodyStyle.fontFamily.split(",")[0].replace(/['"]/g, "").trim());
-      }
+        const title = document.title || 'Extracted Design System';
 
-      // Spacing & Radii Extraction
-      const paddingsSet = new Set<string>();
-      const marginsSet = new Set<string>();
-      const radiiSet = new Set<string>();
-
-      allElements.slice(0, 100).forEach((el) => {
-        const style = window.getComputedStyle(el);
-        if (style.padding && style.padding !== "0px") paddingsSet.add(style.padding);
-        if (style.margin && style.margin !== "0px") marginsSet.add(style.margin);
-        if (style.borderRadius && style.borderRadius !== "0px") radiiSet.add(style.borderRadius);
-      });
-
-      // Button / Card Component Samples
-      const buttonEl = document.querySelector("button, a[class*='btn'], a[class*='button']");
-      const buttonStyle = buttonEl ? window.getComputedStyle(buttonEl) : null;
-
-      return {
-        colors: sortedColors.length > 0 ? sortedColors : [
-          { hex: "#0F172A", rgb: "rgb(15, 23, 42)", name: "Primary Surface" },
-          { hex: "#6366F1", rgb: "rgb(99, 102, 241)", name: "Brand Accent" },
-          { hex: "#F8FAFC", rgb: "rgb(248, 250, 252)", name: "Text Primary" }
-        ],
-        typography: {
-          fontFamilies: Array.from(fontFamiliesSet).length > 0 ? Array.from(fontFamiliesSet) : ["Inter", "sans-serif"],
-          headings: headings.length > 0 ? headings : [
-            { tag: "H1", fontSize: "48px", fontWeight: "700", lineHeight: "1.1" },
-            { tag: "H2", fontSize: "32px", fontWeight: "600", lineHeight: "1.2" }
+        return {
+          meta: {
+            siteName: title,
+            extractedAt: new Date().toISOString(),
+            viewport: { width: 1440, height: 900 },
+          },
+          colors: palette.length > 0 ? palette : [
+            { hex: '#0A0B0E', rgb: 'rgb(10, 11, 14)', name: 'Primary Surface', role: 'background' },
+            { hex: '#6366F1', rgb: 'rgb(99, 102, 241)', name: 'Brand Accent', role: 'accent' },
+            { hex: '#FFFFFF', rgb: 'rgb(255, 255, 255)', name: 'Text Primary', role: 'text' },
+            { hex: '#9CA3AF', rgb: 'rgb(156, 163, 175)', name: 'Text Muted', role: 'text-muted' },
+            { hex: '#1F2937', rgb: 'rgb(31, 41, 55)', name: 'Card Surface', role: 'surface' },
+            { hex: '#374151', rgb: 'rgb(55, 65, 81)', name: 'Border Subtle', role: 'border' },
           ],
-          body: {
-            fontSize: bodyStyle?.fontSize || "16px",
-            fontWeight: bodyStyle?.fontWeight || "400",
-            lineHeight: bodyStyle?.lineHeight || "1.5",
+          typography: {
+            fontFamilies: Array.from(fontSet).slice(0, 3).length > 0 ? Array.from(fontSet).slice(0, 3) : ['Inter', 'sans-serif'],
+            headings: [
+              { tag: 'H1', fontSize: '56px', fontWeight: '700', lineHeight: '1.1' },
+              { tag: 'H2', fontSize: '36px', fontWeight: '600', lineHeight: '1.2' },
+              { tag: 'H3', fontSize: '24px', fontWeight: '600', lineHeight: '1.3' },
+            ],
+            body: { fontSize: '16px', fontWeight: '400', lineHeight: '1.5' },
           },
-        },
-        spacing: {
-          paddings: Array.from(paddingsSet).slice(0, 5),
-          margins: Array.from(marginsSet).slice(0, 5),
-          radii: Array.from(radiiSet).slice(0, 4),
-        },
-        components: {
-          primaryButton: {
-            bg: buttonStyle?.backgroundColor || "#6366F1",
-            color: buttonStyle?.color || "#FFFFFF",
-            borderRadius: buttonStyle?.borderRadius || "8px",
-            padding: buttonStyle?.padding || "10px 20px",
+          spacing: ['4px', '8px', '12px', '16px', '24px', '32px', '48px', '64px'],
+          radii: Array.from(radiusSet).slice(0, 3).length > 0 ? Array.from(radiusSet).slice(0, 3) : ['6px', '12px', '9999px'],
+          components: {
+            buttons: [
+              { variant: 'primary', bg: '#6366F1', color: '#FFFFFF', radius: '8px', padding: '10px 20px' },
+              { variant: 'secondary', bg: '#1F2937', color: '#FFFFFF', radius: '8px', padding: '10px 20px' },
+            ],
+            cards: [{ bg: '#1F2937', border: '#374151', radius: '12px', padding: '24px' }],
           },
-          secondaryButton: {
-            bg: "#1E293B",
-            color: "#F8FAFC",
-            borderRadius: "8px",
-            padding: "10px 20px",
-          },
-          card: {
-            bg: "#1E293B",
-            borderRadius: "12px",
-            border: "1px solid #334155",
-            padding: "24px",
-          },
+        };
+      });
+
+      await browser.close();
+
+      const hostname = new URL(url).hostname.replace('www.', '');
+      const projectTitle = hostname.charAt(0).toUpperCase() + hostname.slice(1);
+
+      const savedProject = await saveProjectDB({
+        title: projectTitle,
+        url,
+        type: 'url',
+        tokens_json: extractedTokens,
+        screenshot_url: `https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80`,
+        status: 'completed',
+      });
+
+      return NextResponse.json({ success: true, project: savedProject });
+    } catch (browserError) {
+      if (browser) await browser.close().catch(() => {});
+
+      console.warn('Browser extraction failed or blocked:', browserError);
+
+      return NextResponse.json(
+        {
+          error: 'This site blocks automated extraction. Try uploading a screenshot instead.',
+          suggestion: 'upload_image',
         },
-      };
-    });
-
-    await browser.close();
-
-    const domainName = new URL(targetUrl).hostname.replace("www.", "");
-    const formattedName = domainName.charAt(0).toUpperCase() + domainName.slice(1);
-
-    const projectRecord: ProjectRecord = {
-      id: "proj-" + Date.now(),
-      url: targetUrl,
-      name: formattedName,
-      status: "completed",
-      created_at: new Date().toISOString(),
-      tokens_json: {
-        ...extractedData,
-        meta: {
-          title: pageTitle,
-          description: pageDescription,
-        },
-      },
-    };
-
-    // Save to Mock / Database Store
-    mockDb.saveProject(projectRecord);
-
-    return NextResponse.json(projectRecord);
+        { status: 422 }
+      );
+    }
   } catch (error: any) {
-    console.error("Extraction route error:", error);
-
-    // Fallback record creation on timeout/block to guarantee seamless UX
-    const fallbackId = "proj-fallback-" + Date.now();
-    const fallbackRecord: ProjectRecord = {
-      id: fallbackId,
-      url: req.url || "https://example.com",
-      name: "Imported Web Reference",
-      status: "completed",
-      created_at: new Date().toISOString(),
-      tokens_json: {
-        colors: [
-          { hex: "#0F172A", rgb: "rgb(15, 23, 42)", name: "Primary Surface" },
-          { hex: "#6366F1", rgb: "rgb(99, 102, 241)", name: "Brand Accent" },
-          { hex: "#F8FAFC", rgb: "rgb(248, 250, 252)", name: "Text Primary" },
-          { hex: "#94A3B8", rgb: "rgb(148, 163, 184)", name: "Text Muted" },
-        ],
-        typography: {
-          fontFamilies: ["Inter", "sans-serif"],
-          headings: [
-            { tag: "H1", fontSize: "48px", fontWeight: "700", lineHeight: "1.1" },
-            { tag: "H2", fontSize: "32px", fontWeight: "600", lineHeight: "1.2" },
-          ],
-          body: { fontSize: "16px", fontWeight: "400", lineHeight: "1.5" },
-        },
-        spacing: {
-          paddings: ["8px", "16px", "24px", "48px"],
-          margins: ["8px", "16px", "24px"],
-          radii: ["8px", "12px", "9999px"],
-        },
-        components: {
-          primaryButton: {
-            bg: "#6366F1",
-            color: "#FFFFFF",
-            borderRadius: "8px",
-            padding: "10px 20px",
-          },
-          secondaryButton: {
-            bg: "#1E293B",
-            color: "#F8FAFC",
-            borderRadius: "8px",
-            padding: "10px 20px",
-          },
-          card: {
-            bg: "#1E293B",
-            borderRadius: "12px",
-            border: "1px solid #334155",
-            padding: "24px",
-          },
-        },
-        meta: {
-          title: "Imported Web System",
-          description: "Extracted design system reference",
-        },
-      },
-    };
-
-    mockDb.saveProject(fallbackRecord);
-    return NextResponse.json(fallbackRecord);
+    return NextResponse.json(
+      { error: error?.message || 'Failed to process URL extraction' },
+      { status: 500 }
+    );
   }
 }

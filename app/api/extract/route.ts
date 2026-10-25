@@ -12,6 +12,8 @@ import { snapSpacingToGrid, harmonizeContrast } from '@/lib/extract/harmonizer';
 import { compileReactComponents, compileDesignMd } from '@/lib/extract/compiler';
 import { generatePromptSuite } from '@/lib/extract/prompts';
 import { extractPageAssets, detectTechStack } from '@/lib/extract/assets';
+import { checkSlop } from '@/lib/extract/slop';
+import { detectNeedVision } from '@/lib/extract/vision';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
@@ -105,6 +107,9 @@ export async function POST(req: Request) {
 
     await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
     await new Promise((resolve) => setTimeout(resolve, 2000));
+
+    // Check for canvas elements
+    const hasCanvas = await page.evaluate(() => document.querySelectorAll('canvas').length > 0);
 
     // 1. Core Token Extraction
     const extractedTokens = await page.evaluate(() => {
@@ -202,6 +207,10 @@ export async function POST(req: Request) {
     const designMd = compileDesignMd(title, url, tokens);
     const promptSuite = generatePromptSuite(title, designMd);
 
+    // 7. Slop Checker & Vision Detector
+    const slopReport = checkSlop(tokens);
+    const needVision = detectNeedVision(tokens, hasCanvas);
+
     const projectData: any = {
       id: `proj-${Date.now()}`,
       user_id: null,
@@ -238,6 +247,8 @@ export async function POST(req: Request) {
       assets,
       wcagReport,
       techStack,
+      slopReport,
+      needVision,
     });
   } catch (err: any) {
     console.error('EXTRACTION_FAILED:', err);

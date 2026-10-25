@@ -47,12 +47,50 @@ export async function POST(req: Request) {
 
     const { url } = validation.data;
 
-    const executablePath = await chromium.executablePath();
+    const chromiumInstance: any = (chromium as any).default || chromium;
+
+    let executablePath: string | undefined;
+
+    // Check if running in a Vercel/Lambda serverless environment or local machine
+    if (process.env.CHROME_EXECUTABLE_PATH) {
+      executablePath = process.env.CHROME_EXECUTABLE_PATH;
+    } else if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION) {
+      try {
+        // Option to pass remote pack URL if bin directory is not bundled by Vercel
+        const packUrl = process.env.CHROMIUM_PACK_URL || 'https://github.com/Sparticuz/chromium/releases/download/v123.0.0/chromium-v123.0.0-pack.tar';
+        executablePath = await chromiumInstance.executablePath(packUrl);
+      } catch {
+        executablePath = await chromiumInstance.executablePath();
+      }
+    } else {
+      // Development or standard Linux/Docker container fallback
+      const fs = await import('fs');
+      const localPaths = [
+        '/usr/bin/google-chrome',
+        '/usr/bin/google-chrome-stable',
+        '/usr/bin/chromium',
+        '/usr/bin/chromium-browser',
+        '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+      ];
+      executablePath = localPaths.find((p) => fs.existsSync(p));
+      if (!executablePath) {
+        try {
+          executablePath = await chromiumInstance.executablePath();
+        } catch {
+          executablePath = undefined;
+        }
+      }
+    }
 
     browser = await puppeteer.launch({
-      args: chromium.args,
+      args: chromiumInstance.args || chromium.args || [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
       defaultViewport: { width: 1440, height: 900 },
-      executablePath: executablePath || undefined,
+      executablePath,
       headless: true,
     });
 

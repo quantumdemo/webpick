@@ -18,3 +18,29 @@
 ○ Compiling / ...
  GET / 200 in 5.4s (next.js: 4.8s, proxy.ts: 201ms, application-code: 424ms)
  GET /pricing 200 in 1363ms (next.js: 1097ms, proxy.ts: 20ms, application-code: 246ms)
+ POST /api/extract 200 in 18.3s (next.js: 3.6s, proxy.ts: 94ms, application-code: 14.6s)
+⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.0.2:3001
+✓ Ready in 1589ms
+✓ Running next.config.ts took 104ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy
+
+⚠ Found a change in next.config.ts. Restarting the server to apply the changes...
+▲ Next.js 16.4.3 (Turbopack)
+- Local:         http://localhost:3001
+- Network:       http://192.168.0.2:3001
+✓ Ready in 434ms
+✓ Running next.config.ts took 49ms
+⚠ The "middleware" file convention is deprecated. Please use "proxy" instead.
+
+  To migrate automatically, run:
+  npx @next/codemod@canary middleware-to-proxy .
+
+  Learn more: https://nextjs.org/docs/messages/middleware-to-proxy

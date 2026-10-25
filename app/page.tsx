@@ -18,6 +18,7 @@ import {
   Layers
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
+import { saveHandoff } from '@/lib/handoff';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -66,14 +67,31 @@ export default function LandingPage() {
         return;
       }
 
+      // Save real extraction payload to handoff before navigating so anonymous runs load real data
+      const projId = data.project?.id || `proj-${Date.now()}`;
+      const hostname = new URL(urlInput).hostname.replace('www.', '');
+      const siteTitle = hostname.charAt(0).toUpperCase() + hostname.slice(1);
+
+      saveHandoff({
+        id: projId,
+        url: urlInput,
+        title: siteTitle,
+        extractedAt: new Date().toISOString(),
+        designMd: data.designMd,
+        tokens: data.tokens,
+        components: data.components,
+        prompts: data.prompts,
+        assets: data.assets,
+        wcagReport: data.wcagReport,
+        techStack: data.techStack,
+        slopReport: data.slopReport,
+        needVision: data.needVision,
+      });
+
       toast.success('Design tokens extracted! Opening Remake Studio...');
       setRemainingSnaps((prev) => (prev && prev > 0 ? prev - 1 : 0));
 
-      if (data.project?.id) {
-        router.push(`/project/${data.project.id}`);
-      } else {
-        router.push('/dashboard');
-      }
+      router.push(`/project/${projId}`);
     } catch (err: any) {
       toast.error('Extraction error: ' + err.message);
     } finally {

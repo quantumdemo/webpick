@@ -54,12 +54,12 @@ export default function DashboardPage() {
         body: JSON.stringify({ url }),
       });
 
-      let data: any = {};
+      let data: any;
       try {
         data = await res.json();
-      } catch (parseErr) {
-        toast.error('Server error: Unreadable response from extraction service');
-        return;
+      } catch {
+        const text = await res.text();
+        data = { error: text || 'Extraction failed' };
       }
 
       if (res.status === 403) {

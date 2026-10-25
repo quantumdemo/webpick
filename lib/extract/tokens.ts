@@ -24,12 +24,94 @@ export interface ColorGroup {
   status: ExtractedColor[];
 }
 
-export function calculateLuminance(hex: string): number {
+export function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const cleanHex = hex.replace('#', '');
-  if (cleanHex.length !== 6) return 0.5;
-  const r = parseInt(cleanHex.substring(0, 2), 16) / 255;
-  const g = parseInt(cleanHex.substring(2, 4), 16) / 255;
-  const b = parseInt(cleanHex.substring(4, 6), 16) / 255;
+  if (cleanHex.length !== 6) return { r: 128, g: 128, b: 128 };
+  return {
+    r: parseInt(cleanHex.substring(0, 2), 16),
+    g: parseInt(cleanHex.substring(2, 4), 16),
+    b: parseInt(cleanHex.substring(4, 6), 16),
+  };
+}
+
+export function hexToHsl(hex: string): { h: number; s: number; l: number } {
+  const { r: r255, g: g255, b: b255 } = hexToRgb(hex);
+  const r = r255 / 255;
+  const g = g255 / 255;
+  const b = b255 / 255;
+
+  const max = Math.max(r, g, b);
+  const min = Math.min(r, g, b);
+  let h = 0;
+  let s = 0;
+  const l = (max + min) / 2;
+
+  if (max !== min) {
+    const d = max - min;
+    s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+    switch (max) {
+      case r:
+        h = (g - b) / d + (g < b ? 6 : 0);
+        break;
+      case g:
+        h = (b - r) / d + 2;
+        break;
+      case b:
+        h = (r - g) / d + 4;
+        break;
+    }
+    h /= 6;
+  }
+
+  return {
+    h: Math.round(h * 360),
+    s: Math.round(s * 100),
+    l: Math.round(l * 100),
+  };
+}
+
+export function getDescriptiveColorName(hex: string): string {
+  const clean = hex.toUpperCase();
+  if (clean === '#000000') return 'Pure Black';
+  if (clean === '#FFFFFF') return 'Snow White';
+  if (clean === '#08090A') return 'Near Black';
+  if (clean === '#061B31') return 'Deep Navy';
+  if (clean === '#533AFD') return 'Stripe Violet';
+  if (clean === '#6366F1') return 'Indigo Accent';
+  if (clean === '#10B981') return 'Emerald Green';
+  if (clean === '#EF4444') return 'Vivid Red';
+  if (clean === '#F59E0B') return 'Amber Warning';
+
+  const { h, s, l } = hexToHsl(hex);
+
+  if (s < 12) {
+    if (l < 15) return 'Dark Charcoal';
+    if (l < 35) return 'Cool Slate';
+    if (l < 65) return 'Medium Gray';
+    if (l < 88) return 'Cool Silver';
+    return 'Off White';
+  }
+
+  let hueName = 'Color';
+  if (h >= 345 || h < 15) hueName = 'Red';
+  else if (h >= 15 && h < 45) hueName = 'Orange / Amber';
+  else if (h >= 45 && h < 70) hueName = 'Yellow';
+  else if (h >= 70 && h < 165) hueName = 'Green';
+  else if (h >= 165 && h < 195) hueName = 'Cyan / Teal';
+  else if (h >= 195 && h < 255) hueName = 'Blue';
+  else if (h >= 255 && h < 290) hueName = 'Purple / Violet';
+  else if (h >= 290 && h < 345) hueName = 'Pink / Magenta';
+
+  if (l < 25) return `Dark ${hueName}`;
+  if (l > 75) return `Soft ${hueName}`;
+  return `Vivid ${hueName}`;
+}
+
+export function calculateLuminance(hex: string): number {
+  const { r: r255, g: g255, b: b255 } = hexToRgb(hex);
+  const r = r255 / 255;
+  const g = g255 / 255;
+  const b = b255 / 255;
 
   const a = [r, g, b].map(v => (v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
   return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
@@ -44,7 +126,7 @@ export function calculateContrastRatio(hex1: string, hex2: string): number {
   return Math.round(ratio * 10) / 10;
 }
 
-export function groupColors(rawColors: { hex: string; count: number; roleSuggestion?: string }[], bgHex = '#000000'): ColorGroup {
+export function groupColors(rawColors: { hex: string; count: number }[], bgHex = '#000000'): ColorGroup {
   const groups: ColorGroup = {
     surfaces: [],
     text: [],
@@ -53,38 +135,39 @@ export function groupColors(rawColors: { hex: string; count: number; roleSuggest
     status: [],
   };
 
+  const primaryBg = rawColors[0]?.hex || bgHex;
+
   rawColors.forEach((col, idx) => {
-    const contrast = calculateContrastRatio(col.hex, bgHex);
+    const contrast = calculateContrastRatio(col.hex, primaryBg);
+    const { s, l } = hexToHsl(col.hex);
+    const name = getDescriptiveColorName(col.hex);
+
     const item: ExtractedColor = {
       hex: col.hex,
       rgb: col.hex,
       count: col.count,
       role: 'surface',
-      name: `Token-${idx + 1}`,
+      name,
       contrastOnBg: contrast,
     };
 
-    const clean = col.hex.toUpperCase();
-    if (clean.startsWith('#0') || clean.startsWith('#1') || clean.startsWith('#2') || clean === '#FFFFFF' && idx === 0) {
-      item.role = 'surface';
-      item.name = idx === 0 ? 'Background Primary' : 'Surface Container';
-      groups.surfaces.push(item);
-    } else if (contrast >= 4.5 || clean === '#FFFFFF' || clean === '#F7F8F8' || clean === '#E5E5E6') {
-      item.role = 'text';
-      item.name = contrast >= 7 ? 'Text Primary' : 'Text Secondary';
-      groups.text.push(item);
-    } else if (clean.includes('E4F2') || clean.includes('6366') || clean.includes('3B82') || clean.includes('10B9')) {
+    if (idx === 0 || (s < 20 && (l < 20 || l > 92))) {
+      if (contrast < 3.0) {
+        item.role = 'surface';
+        groups.surfaces.push(item);
+      } else {
+        item.role = 'text';
+        groups.text.push(item);
+      }
+    } else if (s > 40 && l > 20 && l < 80) {
       item.role = 'accent';
-      item.name = 'Brand Accent';
       groups.accents.push(item);
-    } else if (clean.includes('2E2E') || clean.includes('3741') || clean.includes('E5E7')) {
+    } else if (s < 30 && l >= 20 && l <= 70) {
       item.role = 'border';
-      item.name = 'Border Line';
       groups.borders.push(item);
-    } else if (clean.includes('EF44') || clean.includes('22C5') || clean.includes('F59E')) {
-      item.role = 'status';
-      item.name = 'Status Badge';
-      groups.status.push(item);
+    } else if (contrast >= 4.5) {
+      item.role = 'text';
+      groups.text.push(item);
     } else {
       item.role = 'surface';
       groups.surfaces.push(item);

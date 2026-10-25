@@ -20,14 +20,15 @@ import {
   Cpu,
   Image,
   ShieldCheck,
-  AlertTriangle
+  AlertTriangle,
+  Globe
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { calculateWcagContrast, generateTailwindConfig, generateDesignMd, generateAiPrompt } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { loadHandoff, saveHandoff } from '@/lib/handoff';
+import { loadHandoff } from '@/lib/handoff';
 import JSZip from 'jszip';
 
 interface StudioProps {
@@ -37,6 +38,7 @@ interface StudioProps {
 
 export function StudioClient({ initialProject, projectId }: StudioProps) {
   const [handoffData, setHandoffData] = useState<any>(null);
+  const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -44,23 +46,65 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
       if (stored) {
         setHandoffData(stored);
       }
+      setLoaded(true);
     }
   }, [projectId]);
 
-  // Priority: Database project data -> Handoff storage payload -> Minimal fallback
+  // Read purely from database project record or client handoff storage — zero mock/demo fallbacks
   const project = initialProject || (handoffData?.id ? {
     id: handoffData.id,
-    title: handoffData.title || 'Extracted Design System',
-    url: handoffData.url || 'https://example.com',
+    title: handoffData.title,
+    url: handoffData.url,
     tokens_json: handoffData.tokens,
-  } : {
-    id: projectId,
-    title: 'Extracted Design System',
-    url: 'https://example.com',
-    tokens_json: null,
-  });
+  } : null);
 
-  const extractedTokens = handoffData?.tokens || project?.tokens_json || {};
+  const extractedTokens = handoffData?.tokens || project?.tokens_json || null;
+
+  const [activeTab, setActiveTab] = useState<'design' | 'components' | 'prompts' | 'assets' | 'colors' | 'fonts' | 'tech' | 'wcag'>('design');
+  const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
+  const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'cyberpunk' | 'emerald'>('dark');
+  const [copiedKey, setCopiedKey] = useState<string | null>(null);
+  const [editableHeroTitle, setEditableHeroTitle] = useState('');
+  const [editableSubtext, setEditableSubtext] = useState('');
+  const [isExporting, setIsExporting] = useState(false);
+
+  useEffect(() => {
+    if (project?.title) {
+      setEditableHeroTitle(`Rebuilding ${project.title}`);
+      setEditableSubtext(`Extracted design system and clean React components for ${project.url || project.title}`);
+    }
+  }, [project]);
+
+  if (!loaded) {
+    return (
+      <div className="min-h-screen bg-[#07080A] text-white flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  // If no real extraction data is present in handoff or database, show clean "Extract a Site" prompt rather than fake demo data
+  if (!extractedTokens) {
+    return (
+      <div className="min-h-screen bg-[#07080A] text-white flex flex-col items-center justify-center p-6 text-center space-y-6">
+        <div className="w-16 h-16 rounded-2xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 mx-auto">
+          <Globe className="w-8 h-8" />
+        </div>
+        <div className="space-y-2 max-w-md">
+          <h2 className="text-2xl font-bold">No Extracted Site DNA Found</h2>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            Please paste a website URL on the home page to extract real colors, fonts, components, and DESIGN.md specifications.
+          </p>
+        </div>
+        <Link href="/">
+          <Button className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-6 py-2.5 rounded-xl text-xs shadow-lg shadow-indigo-600/30">
+            Extract a Website Now
+          </Button>
+        </Link>
+      </div>
+    );
+  }
+
   const designMdContent = handoffData?.designMd || generateDesignMd(extractedTokens);
   const promptSuite = handoffData?.prompts || {
     cursorRules: generateAiPrompt(extractedTokens),
@@ -71,24 +115,14 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
   const components = handoffData?.components || {};
   const assets = handoffData?.assets || { images: [], svgs: [], fonts: [] };
   const wcagReport = handoffData?.wcagReport || null;
-  const techStack = handoffData?.techStack || { frameworks: ['Next.js', 'React'], uiKits: ['Tailwind CSS'] };
+  const techStack = handoffData?.techStack || { frameworks: [], uiKits: [] };
   const slopReport = handoffData?.slopReport || null;
 
-  const [activeTab, setActiveTab] = useState<'design' | 'components' | 'prompts' | 'assets' | 'colors' | 'fonts' | 'tech' | 'wcag'>('design');
-  const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'cyberpunk' | 'emerald'>('dark');
-  const [copiedKey, setCopiedKey] = useState<string | null>(null);
-  const [editableHeroTitle, setEditableHeroTitle] = useState('Re-Architect Web Apps Faster');
-  const [editableSubtext, setEditableSubtext] = useState(
-    'Build clean Next.js & Tailwind CSS interfaces directly from extracted design systems.'
-  );
-  const [isExporting, setIsExporting] = useState(false);
-
   const colors = extractedTokens.colors || {
-    surfaces: [{ hex: '#0A0B0E', name: 'Background' }],
-    text: [{ hex: '#FFFFFF', name: 'Text Primary' }],
-    accents: [{ hex: '#6366F1', name: 'Brand Accent' }],
-    borders: [{ hex: '#27272A', name: 'Border' }],
+    surfaces: [],
+    text: [],
+    accents: [],
+    borders: [],
     status: [],
   };
 
@@ -118,14 +152,14 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
 
       zip.file(
         'README.md',
-        `# ${project.title} - Next.js Starter Package\n\nGenerated by WebPicks Design Studio.\n\n## Getting Started\n1. Install dependencies: \`npm install\`\n2. Run dev server: \`npm run dev\``
+        `# ${project?.title || 'WebPicks'} - Next.js Starter Package\n\nGenerated by WebPicks Design Studio.\n\n## Getting Started\n1. Install dependencies: \`npm install\`\n2. Run dev server: \`npm run dev\``
       );
 
       const content = await zip.generateAsync({ type: 'blob' });
       const url = URL.createObjectURL(content);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `${project.title.toLowerCase().replace(/\s+/g, '-')}-webpicks-nextjs.zip`;
+      a.download = `${(project?.title || 'site').toLowerCase().replace(/\s+/g, '-')}-webpicks-nextjs.zip`;
       a.click();
 
       toast.success('Next.js zip project downloaded successfully!');
@@ -168,6 +202,8 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
     ...(colors.status || []),
   ];
 
+  const primaryAccentHex = colors?.accents?.[0]?.hex || colors?.surfaces?.[0]?.hex || '#6366F1';
+
   return (
     <div className="min-h-screen bg-[#07080A] text-white flex flex-col font-sans selection:bg-indigo-500/30">
       <Toaster position="bottom-right" theme="dark" />
@@ -186,7 +222,7 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
             </div>
             <span className="font-bold text-sm tracking-tight hidden sm:inline">WebPicks Studio</span>
             <span className="text-zinc-600 hidden sm:inline">/</span>
-            <span className="text-xs sm:text-sm font-semibold text-zinc-200">{project.title}</span>
+            <span className="text-xs sm:text-sm font-semibold text-zinc-200">{project?.title}</span>
           </div>
         </div>
 
@@ -258,7 +294,7 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
               </div>
-              <span className="text-[10px] font-mono opacity-60">Interactive Preview Canvas</span>
+              <span className="text-[10px] font-mono opacity-60">Live Extraction Preview</span>
             </div>
 
             <div className="text-center space-y-4 py-8">
@@ -278,8 +314,8 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
               >
                 {editableSubtext}
               </p>
-              <Button style={{ backgroundColor: colors?.accents?.[0]?.hex || '#6366F1', color: '#FFFFFF' }}>
-                Get Started Free
+              <Button style={{ backgroundColor: primaryAccentHex, color: '#FFFFFF' }}>
+                Action Button
               </Button>
             </div>
           </div>
@@ -370,7 +406,7 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
             <TabsContent value="assets" className="space-y-3">
               <div className="text-xs font-semibold text-zinc-400">Extracted Images & Media</div>
               <div className="grid grid-cols-2 gap-2">
-                {(assets.images || []).slice(0, 6).map((imgUrl: string, idx: number) => (
+                {(assets.images || []).slice(0, 8).map((imgUrl: string, idx: number) => (
                   <div key={idx} className="bg-zinc-900 border border-white/10 p-2 rounded-lg flex items-center gap-2 overflow-hidden">
                     <Image className="w-4 h-4 text-indigo-400 flex-shrink-0" />
                     <span className="text-[10px] text-zinc-300 truncate">{imgUrl}</span>
@@ -381,14 +417,14 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
 
             {/* 5. Colors Tab */}
             <TabsContent value="colors" className="space-y-2">
-              <div className="text-xs font-semibold text-zinc-400 mb-2">Grouped Color Tokens</div>
+              <div className="text-xs font-semibold text-zinc-400 mb-2">Extracted Grouped Colors</div>
               {allColorList.map((c: any, index: number) => (
                 <Card key={index} className="p-2.5 bg-zinc-900/80 border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-6 h-6 rounded border border-white/20" style={{ backgroundColor: c.hex }} />
                     <div>
                       <div className="text-xs font-semibold text-zinc-200">{c.name || 'Color Token'}</div>
-                      <div className="text-[10px] text-zinc-400 font-mono">{c.hex}</div>
+                      <div className="text-[10px] text-zinc-400 font-mono">{c.hex} (seen {c.count || 1} times)</div>
                     </div>
                   </div>
                   <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCopy(c.hex, `color-${index}`, c.hex)}>
@@ -401,7 +437,7 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
             {/* 6. Fonts Tab */}
             <TabsContent value="fonts" className="space-y-2">
               <div className="text-xs font-semibold text-zinc-400 mb-2">Typography & Font Stacks</div>
-              {(extractedTokens?.typography?.fontFamilies || ['Inter', 'sans-serif']).map((f: string, idx: number) => (
+              {(extractedTokens?.typography?.fontFamilies || []).map((f: string, idx: number) => (
                 <div key={idx} className="bg-zinc-900 border border-white/10 p-3 rounded-lg flex items-center justify-between">
                   <span className="text-xs font-medium text-zinc-200">{f}</span>
                   <span className="text-[10px] text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">Font Family</span>
@@ -416,7 +452,7 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
                 <div className="bg-zinc-900 border border-white/10 p-3 rounded-lg">
                   <div className="text-[11px] text-zinc-400 mb-1">Frameworks:</div>
                   <div className="flex flex-wrap gap-1">
-                    {(techStack.frameworks || ['Next.js', 'React']).map((fw: string, i: number) => (
+                    {(techStack.frameworks || []).map((fw: string, i: number) => (
                       <span key={i} className="text-xs font-semibold text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded border border-indigo-500/30">{fw}</span>
                     ))}
                   </div>
@@ -425,7 +461,7 @@ export function StudioClient({ initialProject, projectId }: StudioProps) {
                 <div className="bg-zinc-900 border border-white/10 p-3 rounded-lg">
                   <div className="text-[11px] text-zinc-400 mb-1">UI Kits:</div>
                   <div className="flex flex-wrap gap-1">
-                    {(techStack.uiKits || ['Tailwind CSS']).map((ui: string, i: number) => (
+                    {(techStack.uiKits || []).map((ui: string, i: number) => (
                       <span key={i} className="text-xs font-semibold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30">{ui}</span>
                     ))}
                   </div>

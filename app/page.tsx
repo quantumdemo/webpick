@@ -14,7 +14,8 @@ import {
   FileCode,
   Zap,
   Lock,
-  X
+  X,
+  Layers
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 
@@ -82,18 +83,12 @@ export default function LandingPage() {
       <header className="border-b border-white/10 px-6 py-4 flex items-center justify-between sticky top-0 bg-[#0A0B0E]/80 backdrop-blur-md z-50">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-indigo-500/20">
-            <Sparkles className="w-5 h-5" />
+            <Layers className="w-5 h-5" />
           </div>
           <span className="text-xl font-bold tracking-tight">WebPicks</span>
         </div>
 
         <nav className="flex items-center gap-6 text-xs font-medium">
-          <Link href="/dashboard" className="text-zinc-400 hover:text-white transition">
-            Dashboard
-          </Link>
-          <Link href="/pricing" className="text-zinc-400 hover:text-white transition">
-            Pricing
-          </Link>
           <Link
             href="/login"
             className="bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 py-2 rounded-lg transition shadow-md shadow-indigo-600/20"

@@ -54,21 +54,6 @@ export function HeaderNav({ activePage }: { activePage?: string }) {
           </div>
           <span>WebPicks</span>
         </Link>
-
-        <nav className="hidden md:flex items-center gap-4 text-xs font-medium">
-          <Link
-            href="/dashboard"
-            className={`transition ${activePage === 'dashboard' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-zinc-200'}`}
-          >
-            Dashboard
-          </Link>
-          <Link
-            href="/pricing"
-            className={`transition ${activePage === 'pricing' ? 'text-white font-semibold' : 'text-zinc-400 hover:text-zinc-200'}`}
-          >
-            Pricing
-          </Link>
-        </nav>
       </div>
 
       <div className="flex items-center gap-3">
@@ -97,13 +82,7 @@ export function HeaderNav({ activePage }: { activePage?: string }) {
           <div className="flex items-center gap-2">
             <Link
               href="/login"
-              className="text-xs text-zinc-300 hover:text-white px-3 py-1.5 rounded-lg border border-white/10 hover:bg-zinc-900 transition"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/login"
-              className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-3 py-1.5 rounded-lg transition shadow-md shadow-indigo-600/20"
+              className="text-xs bg-indigo-600 hover:bg-indigo-500 text-white font-semibold px-4 py-2 rounded-lg transition shadow-md shadow-indigo-600/20"
             >
               Get Started
             </Link>

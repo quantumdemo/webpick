@@ -54,6 +54,7 @@ export function HeaderNav({ activePage }: { activePage?: string }) {
           </div>
           <span>WebPicks</span>
         </Link>
+
       </div>
 
       <div className="flex items-center gap-3">

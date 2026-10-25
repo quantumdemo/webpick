@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Layers,
@@ -15,23 +15,66 @@ import {
   ExternalLink,
   Palette,
   FileText,
-  Zap
+  Zap,
+  Code2,
+  Cpu,
+  Image,
+  ShieldCheck,
+  AlertTriangle
 } from 'lucide-react';
 import { toast, Toaster } from 'sonner';
 import { calculateWcagContrast, generateTailwindConfig, generateDesignMd, generateAiPrompt } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { loadHandoff, saveHandoff } from '@/lib/handoff';
 import JSZip from 'jszip';
 
 interface StudioProps {
   initialProject: any;
+  projectId: string;
 }
 
-export function StudioClient({ initialProject }: StudioProps) {
-  const [project] = useState(initialProject);
-  const [activeTab, setActiveTab] = useState<'tokens' | 'tailwind' | 'design' | 'prompt'>('tokens');
-  const [mobileTab, setMobileTab] = useState<'style' | 'canvas' | 'code'>('canvas');
+export function StudioClient({ initialProject, projectId }: StudioProps) {
+  const [handoffData, setHandoffData] = useState<any>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const stored = loadHandoff(projectId) || loadHandoff();
+      if (stored) {
+        setHandoffData(stored);
+      }
+    }
+  }, [projectId]);
+
+  // Priority: Database project data -> Handoff storage payload -> Minimal fallback
+  const project = initialProject || (handoffData?.id ? {
+    id: handoffData.id,
+    title: handoffData.title || 'Extracted Design System',
+    url: handoffData.url || 'https://example.com',
+    tokens_json: handoffData.tokens,
+  } : {
+    id: projectId,
+    title: 'Extracted Design System',
+    url: 'https://example.com',
+    tokens_json: null,
+  });
+
+  const extractedTokens = handoffData?.tokens || project?.tokens_json || {};
+  const designMdContent = handoffData?.designMd || generateDesignMd(extractedTokens);
+  const promptSuite = handoffData?.prompts || {
+    cursorRules: generateAiPrompt(extractedTokens),
+    claudeMd: generateAiPrompt(extractedTokens),
+    chatGpt: generateAiPrompt(extractedTokens),
+    windsurf: generateAiPrompt(extractedTokens),
+  };
+  const components = handoffData?.components || {};
+  const assets = handoffData?.assets || { images: [], svgs: [], fonts: [] };
+  const wcagReport = handoffData?.wcagReport || null;
+  const techStack = handoffData?.techStack || { frameworks: ['Next.js', 'React'], uiKits: ['Tailwind CSS'] };
+  const slopReport = handoffData?.slopReport || null;
+
+  const [activeTab, setActiveTab] = useState<'design' | 'components' | 'prompts' | 'assets' | 'colors' | 'fonts' | 'tech' | 'wcag'>('design');
   const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [themeMode, setThemeMode] = useState<'dark' | 'light' | 'cyberpunk' | 'emerald'>('dark');
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
@@ -41,10 +84,13 @@ export function StudioClient({ initialProject }: StudioProps) {
   );
   const [isExporting, setIsExporting] = useState(false);
 
-  const tokens = project?.tokens_json || {};
-  const colors = tokens.colors || [];
-  const typography = tokens.typography || {};
-  const radii = tokens.radii || ['6px', '12px', '9999px'];
+  const colors = extractedTokens.colors || {
+    surfaces: [{ hex: '#0A0B0E', name: 'Background' }],
+    text: [{ hex: '#FFFFFF', name: 'Text Primary' }],
+    accents: [{ hex: '#6366F1', name: 'Brand Accent' }],
+    borders: [{ hex: '#27272A', name: 'Border' }],
+    status: [],
+  };
 
   const handleCopy = (text: string, key: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -59,16 +105,17 @@ export function StudioClient({ initialProject }: StudioProps) {
 
     try {
       const zip = new JSZip();
-      zip.file('tailwind.config.js', generateTailwindConfig(tokens));
+      zip.file('tailwind.config.js', generateTailwindConfig(extractedTokens));
       zip.file(
         'app/globals.css',
-        `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n\n:root {\n  --background: ${colors[0]?.hex || '#0A0B0E'};\n  --foreground: ${colors[2]?.hex || '#FFFFFF'};\n}`
+        `@tailwind base;\n@tailwind components;\n@tailwind utilities;\n`
       );
-      zip.file('lib/tokens.json', JSON.stringify(tokens, null, 2));
-      zip.file('DESIGN.md', generateDesignMd(tokens));
+      zip.file('lib/tokens.json', JSON.stringify(extractedTokens, null, 2));
+      zip.file('DESIGN.md', designMdContent);
+      if (components.button) zip.file('components/Button.tsx', components.button);
+      if (components.card) zip.file('components/Card.tsx', components.card);
+      if (components.input) zip.file('components/Input.tsx', components.input);
 
-      const heroCode = `'use client';\n\nexport function Hero() {\n  return (\n    <section className="py-20 px-6 text-center max-w-4xl mx-auto">\n      <h1 className="text-5xl font-bold tracking-tight mb-4">${editableHeroTitle}</h1>\n      <p className="text-lg opacity-80 mb-8 max-w-2xl mx-auto">${editableSubtext}</p>\n      <div className="flex items-center justify-center gap-4">\n        <Button size="lg">\n          Get Started Free\n        </Button>\n      </div>\n    </section>\n  );\n}\n`;
-      zip.file('components/Hero.tsx', heroCode);
       zip.file(
         'README.md',
         `# ${project.title} - Next.js Starter Package\n\nGenerated by WebPicks Design Studio.\n\n## Getting Started\n1. Install dependencies: \`npm install\`\n2. Run dev server: \`npm run dev\``
@@ -113,6 +160,14 @@ export function StudioClient({ initialProject }: StudioProps) {
     }
   };
 
+  const allColorList = [
+    ...(colors.surfaces || []),
+    ...(colors.text || []),
+    ...(colors.accents || []),
+    ...(colors.borders || []),
+    ...(colors.status || []),
+  ];
+
   return (
     <div className="min-h-screen bg-[#07080A] text-white flex flex-col font-sans selection:bg-indigo-500/30">
       <Toaster position="bottom-right" theme="dark" />
@@ -120,7 +175,7 @@ export function StudioClient({ initialProject }: StudioProps) {
       {/* Top Header */}
       <header className="border-b border-white/10 bg-zinc-950/80 px-4 sm:px-6 py-3 flex items-center justify-between sticky top-0 z-50 backdrop-blur-md">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard">
+          <Link href="/">
             <Button variant="outline" size="icon" className="h-8 w-8">
               <ArrowLeft className="w-4 h-4" />
             </Button>
@@ -129,7 +184,7 @@ export function StudioClient({ initialProject }: StudioProps) {
             <div className="w-7 h-7 rounded-lg bg-indigo-600 flex items-center justify-center font-bold text-white shadow-md shadow-indigo-600/30">
               <Layers className="w-4 h-4" />
             </div>
-            <span className="font-bold text-sm tracking-tight hidden sm:inline">WebPicks</span>
+            <span className="font-bold text-sm tracking-tight hidden sm:inline">WebPicks Studio</span>
             <span className="text-zinc-600 hidden sm:inline">/</span>
             <span className="text-xs sm:text-sm font-semibold text-zinc-200">{project.title}</span>
           </div>
@@ -172,130 +227,41 @@ export function StudioClient({ initialProject }: StudioProps) {
         </Button>
       </header>
 
-      {/* Mobile Screen (< 768px): Render as Tabs with 3 Triggers */}
-      <div className="md:hidden p-4 border-b border-white/10 bg-zinc-900/90">
-        <Tabs value={mobileTab} onValueChange={(val) => setMobileTab(val as 'style' | 'canvas' | 'code')}>
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger value="style">Style</TabsTrigger>
-            <TabsTrigger value="canvas">Preview</TabsTrigger>
-            <TabsTrigger value="code">Export</TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-
       {/* Main Workspace Layout */}
-      <div className="flex-1 grid grid-cols-1 md:grid-cols-12 overflow-hidden">
-        {/* LEFT PANEL: Style Tokens */}
-        <aside
-          className={`md:col-span-3 border-r border-white/10 bg-zinc-950/60 p-5 overflow-y-auto space-y-6 max-h-[calc(100vh-53px)] ${
-            mobileTab === 'style' ? 'block' : 'hidden md:block'
-          }`}
-        >
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400 flex items-center gap-2">
-                <Palette className="w-3.5 h-3.5 text-indigo-400" /> Extracted Palette
-              </h3>
-              <span className="text-[10px] text-zinc-500 font-mono">WCAG</span>
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
+        {/* LEFT & CENTER PANEL: Canvas Preview */}
+        <main className="lg:col-span-7 bg-[#0B0C10] p-4 sm:p-6 overflow-y-auto flex flex-col items-center justify-start space-y-6">
+          {/* Theme & Canvas Bar */}
+          <div className="w-full flex flex-wrap items-center justify-between gap-3 bg-zinc-900/90 border border-white/10 px-4 py-2 rounded-xl text-xs">
+            <div className="flex items-center gap-2">
+              <span className="text-zinc-400 text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1">
+                <Zap className="w-3 h-3 text-indigo-400" /> Theme Mode:
+              </span>
+              <Button variant={themeMode === 'dark' ? 'default' : 'ghost'} size="sm" onClick={() => setThemeMode('dark')}>Dark</Button>
+              <Button variant={themeMode === 'light' ? 'default' : 'ghost'} size="sm" onClick={() => setThemeMode('light')}>Light</Button>
+              <Button variant={themeMode === 'cyberpunk' ? 'default' : 'ghost'} size="sm" onClick={() => setThemeMode('cyberpunk')}>Cyberpunk</Button>
             </div>
 
-            <div className="space-y-2">
-              {colors.map((c: any, index: number) => {
-                const wcag = calculateWcagContrast(c.hex, colors[0]?.hex || '#0A0B0E');
-                return (
-                  <Card key={index} className="p-2.5 bg-zinc-900/80 border-white/10 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-7 h-7 rounded-lg border border-white/20 flex-shrink-0"
-                        style={{ backgroundColor: c.hex }}
-                      />
-                      <div>
-                        <div className="text-xs font-semibold text-zinc-200">{c.name}</div>
-                        <div className="text-[11px] text-zinc-400 font-mono">{c.hex}</div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                          wcag.pass
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                            : 'bg-red-500/20 text-red-400 border border-red-500/30'
-                        }`}
-                      >
-                        {wcag.badge}
-                      </span>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-6 w-6"
-                        onClick={() => handleCopy(c.hex, `color-${index}`, c.hex)}
-                      >
-                        {copiedKey === `color-${index}` ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </Button>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </aside>
-
-        {/* CENTER PANEL: Canvas Preview */}
-        <main
-          className={`md:col-span-6 bg-[#0B0C10] p-4 sm:p-6 overflow-y-auto flex flex-col items-center justify-start space-y-4 ${
-            mobileTab === 'canvas' ? 'block' : 'hidden md:flex'
-          }`}
-        >
-          {/* Theme Selector */}
-          <div className="flex flex-wrap items-center justify-center gap-2 bg-zinc-900/90 border border-white/10 px-3 py-1.5 rounded-full text-xs">
-            <span className="text-zinc-400 text-[11px] font-semibold uppercase tracking-wider flex items-center gap-1">
-              <Zap className="w-3 h-3 text-indigo-400" /> Theme:
-            </span>
-            <Button
-              variant={themeMode === 'dark' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-7 px-2.5 rounded-full"
-              onClick={() => setThemeMode('dark')}
-            >
-              Dark
-            </Button>
-            <Button
-              variant={themeMode === 'light' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-7 px-2.5 rounded-full"
-              onClick={() => setThemeMode('light')}
-            >
-              Light
-            </Button>
-            <Button
-              variant={themeMode === 'cyberpunk' ? 'default' : 'ghost'}
-              size="sm"
-              className="h-7 px-2.5 rounded-full"
-              onClick={() => setThemeMode('cyberpunk')}
-            >
-              Cyberpunk
-            </Button>
+            {slopReport && (
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-zinc-800 border border-white/10 text-[11px]">
+                <AlertTriangle className="w-3 h-3 text-amber-400" />
+                <span className="text-zinc-300">Slop Score: <strong>{slopReport.score}/100</strong> ({slopReport.rating})</span>
+              </div>
+            )}
           </div>
 
-          {/* Interactive Canvas Box */}
-          <div
-            className={`transition-all duration-300 rounded-2xl border p-6 sm:p-8 shadow-2xl space-y-6 ${getViewportWidth()} ${getCanvasThemeClass()}`}
-          >
+          {/* Canvas Box */}
+          <div className={`transition-all duration-300 rounded-2xl border p-6 sm:p-8 shadow-2xl space-y-6 ${getViewportWidth()} ${getCanvasThemeClass()}`}>
             <div className="flex items-center justify-between border-b border-white/10 pb-3">
               <div className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
                 <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
               </div>
-              <span className="text-[10px] font-mono opacity-60">Interactive Canvas</span>
+              <span className="text-[10px] font-mono opacity-60">Interactive Preview Canvas</span>
             </div>
 
-            <div className="text-center space-y-4 py-6">
+            <div className="text-center space-y-4 py-8">
               <h1
                 contentEditable
                 suppressContentEditableWarning
@@ -312,45 +278,175 @@ export function StudioClient({ initialProject }: StudioProps) {
               >
                 {editableSubtext}
               </p>
-              <Button style={{ backgroundColor: colors[1]?.hex || '#6366F1', color: '#FFFFFF' }}>
+              <Button style={{ backgroundColor: colors?.accents?.[0]?.hex || '#6366F1', color: '#FFFFFF' }}>
                 Get Started Free
               </Button>
             </div>
           </div>
         </main>
 
-        {/* RIGHT PANEL: Code Tabs */}
-        <aside
-          className={`md:col-span-3 border-l border-white/10 bg-zinc-950/60 p-5 flex flex-col overflow-y-auto max-h-[calc(100vh-53px)] ${
-            mobileTab === 'code' ? 'block' : 'hidden md:flex'
-          }`}
-        >
+        {/* RIGHT PANEL: Feature Tabs */}
+        <aside className="lg:col-span-5 border-l border-white/10 bg-zinc-950/80 p-5 flex flex-col overflow-y-auto max-h-[calc(100vh-53px)]">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
-            <TabsList className="w-full grid grid-cols-4 mb-4 text-[10px]">
-              <TabsTrigger value="tokens">tokens</TabsTrigger>
-              <TabsTrigger value="tailwind">tailwind</TabsTrigger>
-              <TabsTrigger value="design">DESIGN</TabsTrigger>
-              <TabsTrigger value="prompt">Prompt</TabsTrigger>
+            <TabsList className="w-full flex flex-wrap gap-1 mb-4 text-[11px] bg-zinc-900 border border-white/10 p-1 rounded-xl">
+              <TabsTrigger value="design">DESIGN.md</TabsTrigger>
+              <TabsTrigger value="components">Components</TabsTrigger>
+              <TabsTrigger value="prompts">Prompts</TabsTrigger>
+              <TabsTrigger value="assets">Assets</TabsTrigger>
+              <TabsTrigger value="colors">Colors</TabsTrigger>
+              <TabsTrigger value="fonts">Fonts</TabsTrigger>
+              <TabsTrigger value="tech">Tech Stack</TabsTrigger>
+              <TabsTrigger value="wcag">WCAG</TabsTrigger>
             </TabsList>
-            <TabsContent value="tokens">
+
+            {/* 1. DESIGN.md Tab */}
+            <TabsContent value="design" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-zinc-400">DESIGN.md Specification</span>
+                <Button variant="outline" size="sm" onClick={() => handleCopy(designMdContent, 'design-md', 'DESIGN.md')}>
+                  <Copy className="w-3 h-3 mr-1" /> Copy
+                </Button>
+              </div>
               <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-4 font-mono text-[11px] overflow-x-auto text-zinc-300">
-                <pre>{JSON.stringify(tokens, null, 2)}</pre>
+                <pre>{designMdContent}</pre>
               </div>
             </TabsContent>
-            <TabsContent value="tailwind">
-              <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-4 font-mono text-[11px] overflow-x-auto text-zinc-300">
-                <pre>{generateTailwindConfig(tokens)}</pre>
+
+            {/* 2. Components Tab (React 19 + Tailwind v4) */}
+            <TabsContent value="components" className="space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-300">Button.tsx</span>
+                  <Button variant="outline" size="sm" onClick={() => handleCopy(components.button || '', 'btn-code', 'Button.tsx')}>
+                    <Copy className="w-3 h-3 mr-1" /> Copy
+                  </Button>
+                </div>
+                <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-3 font-mono text-[11px] overflow-x-auto text-zinc-300 max-h-48">
+                  <pre>{components.button || '// Button.tsx component code'}</pre>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-zinc-300">Card.tsx</span>
+                  <Button variant="outline" size="sm" onClick={() => handleCopy(components.card || '', 'card-code', 'Card.tsx')}>
+                    <Copy className="w-3 h-3 mr-1" /> Copy
+                  </Button>
+                </div>
+                <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-3 font-mono text-[11px] overflow-x-auto text-zinc-300 max-h-48">
+                  <pre>{components.card || '// Card.tsx component code'}</pre>
+                </div>
               </div>
             </TabsContent>
-            <TabsContent value="design">
-              <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-4 font-mono text-[11px] overflow-x-auto text-zinc-300">
-                <pre>{generateDesignMd(tokens)}</pre>
+
+            {/* 3. Prompts Tab (.cursorrules, CLAUDE.md) */}
+            <TabsContent value="prompts" className="space-y-4">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-indigo-400">.cursorrules</span>
+                  <Button variant="outline" size="sm" onClick={() => handleCopy(promptSuite.cursorRules, 'prompt-cursor', '.cursorrules')}>
+                    <Copy className="w-3 h-3 mr-1" /> Copy
+                  </Button>
+                </div>
+                <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-3 font-mono text-[11px] overflow-x-auto text-zinc-300 max-h-40">
+                  <pre>{promptSuite.cursorRules}</pre>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-semibold text-purple-400">CLAUDE.md</span>
+                  <Button variant="outline" size="sm" onClick={() => handleCopy(promptSuite.claudeMd, 'prompt-claude', 'CLAUDE.md')}>
+                    <Copy className="w-3 h-3 mr-1" /> Copy
+                  </Button>
+                </div>
+                <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-3 font-mono text-[11px] overflow-x-auto text-zinc-300 max-h-40">
+                  <pre>{promptSuite.claudeMd}</pre>
+                </div>
               </div>
             </TabsContent>
-            <TabsContent value="prompt">
-              <div className="bg-zinc-900/90 border border-white/10 rounded-xl p-4 font-mono text-[11px] overflow-x-auto text-zinc-300">
-                <pre>{generateAiPrompt(tokens)}</pre>
+
+            {/* 4. Assets Tab */}
+            <TabsContent value="assets" className="space-y-3">
+              <div className="text-xs font-semibold text-zinc-400">Extracted Images & Media</div>
+              <div className="grid grid-cols-2 gap-2">
+                {(assets.images || []).slice(0, 6).map((imgUrl: string, idx: number) => (
+                  <div key={idx} className="bg-zinc-900 border border-white/10 p-2 rounded-lg flex items-center gap-2 overflow-hidden">
+                    <Image className="w-4 h-4 text-indigo-400 flex-shrink-0" />
+                    <span className="text-[10px] text-zinc-300 truncate">{imgUrl}</span>
+                  </div>
+                ))}
               </div>
+            </TabsContent>
+
+            {/* 5. Colors Tab */}
+            <TabsContent value="colors" className="space-y-2">
+              <div className="text-xs font-semibold text-zinc-400 mb-2">Grouped Color Tokens</div>
+              {allColorList.map((c: any, index: number) => (
+                <Card key={index} className="p-2.5 bg-zinc-900/80 border-white/10 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded border border-white/20" style={{ backgroundColor: c.hex }} />
+                    <div>
+                      <div className="text-xs font-semibold text-zinc-200">{c.name || 'Color Token'}</div>
+                      <div className="text-[10px] text-zinc-400 font-mono">{c.hex}</div>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => handleCopy(c.hex, `color-${index}`, c.hex)}>
+                    <Copy className="w-3 h-3" />
+                  </Button>
+                </Card>
+              ))}
+            </TabsContent>
+
+            {/* 6. Fonts Tab */}
+            <TabsContent value="fonts" className="space-y-2">
+              <div className="text-xs font-semibold text-zinc-400 mb-2">Typography & Font Stacks</div>
+              {(extractedTokens?.typography?.fontFamilies || ['Inter', 'sans-serif']).map((f: string, idx: number) => (
+                <div key={idx} className="bg-zinc-900 border border-white/10 p-3 rounded-lg flex items-center justify-between">
+                  <span className="text-xs font-medium text-zinc-200">{f}</span>
+                  <span className="text-[10px] text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded">Font Family</span>
+                </div>
+              ))}
+            </TabsContent>
+
+            {/* 7. Tech Stack Tab */}
+            <TabsContent value="tech" className="space-y-3">
+              <div className="text-xs font-semibold text-zinc-400">Detected Tech Stack</div>
+              <div className="space-y-2">
+                <div className="bg-zinc-900 border border-white/10 p-3 rounded-lg">
+                  <div className="text-[11px] text-zinc-400 mb-1">Frameworks:</div>
+                  <div className="flex flex-wrap gap-1">
+                    {(techStack.frameworks || ['Next.js', 'React']).map((fw: string, i: number) => (
+                      <span key={i} className="text-xs font-semibold text-indigo-300 bg-indigo-500/20 px-2 py-0.5 rounded border border-indigo-500/30">{fw}</span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-zinc-900 border border-white/10 p-3 rounded-lg">
+                  <div className="text-[11px] text-zinc-400 mb-1">UI Kits:</div>
+                  <div className="flex flex-wrap gap-1">
+                    {(techStack.uiKits || ['Tailwind CSS']).map((ui: string, i: number) => (
+                      <span key={i} className="text-xs font-semibold text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded border border-purple-500/30">{ui}</span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+
+            {/* 8. WCAG Tab */}
+            <TabsContent value="wcag" className="space-y-3">
+              <div className="text-xs font-semibold text-zinc-400">Accessibility & Contrast Analysis</div>
+              {wcagReport && (
+                <div className="bg-zinc-900 border border-white/10 p-4 rounded-xl space-y-3">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-zinc-400">Contrast Ratio:</span>
+                    <span className="font-mono font-bold text-emerald-400">{wcagReport.originalRatio}:1</span>
+                  </div>
+                  <div className="text-xs text-zinc-300 leading-relaxed bg-zinc-950 p-3 rounded-lg border border-white/5">
+                    {wcagReport.note}
+                  </div>
+                </div>
+              )}
             </TabsContent>
           </Tabs>
         </aside>

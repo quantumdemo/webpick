@@ -1,25 +1,33 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { checkCanSnap, incrementSnap } from '@/lib/usage';
 
 export async function POST(req: Request) {
   try {
-    const snapCheck = await checkCanSnap();
-    if (!snapCheck.allowed) {
-      return NextResponse.json(
-        {
-          error: 'LIMIT_REACHED',
-          message: snapCheck.needsAuth
-            ? "You've used 3 free snaps. Sign up to get more extractions!"
-            : 'You have exhausted your project credits. Upgrade to Pro for unlimited extractions!',
-          needsAuth: snapCheck.needsAuth,
-        },
-        { status: 403 }
-      );
+    if (!isSupabaseConfigured()) {
+      console.log('DEV MODE - skipping freemium gate checks');
+    } else {
+      try {
+        const snapCheck = await checkCanSnap();
+        if (!snapCheck.allowed) {
+          return NextResponse.json(
+            {
+              error: 'LIMIT_REACHED',
+              message: snapCheck.needsAuth
+                ? "You've used 3 free snaps. Sign up to get more extractions!"
+                : 'You have exhausted your project credits. Upgrade to Pro for unlimited extractions!',
+              needsAuth: snapCheck.needsAuth,
+            },
+            { status: 403 }
+          );
+        }
+      } catch (gateErr) {
+        console.warn('Freemium check error, defaulting to allowed', gateErr);
+      }
     }
 
-    const formData = await req.formData();
-    const file = formData.get('file') as File;
+    const formData = await req.formData().catch(() => null);
+    const file = formData?.get('file') as File;
 
     if (!file) {
       return NextResponse.json({ error: 'No image file uploaded' }, { status: 400 });
@@ -49,12 +57,9 @@ export async function POST(req: Request) {
       radii: ['8px', '16px', '9999px'],
     };
 
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    const projectData = {
+    const projectData: any = {
       id: `proj-${Date.now()}`,
-      user_id: user?.id || null,
+      user_id: null,
       title: formattedTitle,
       type: 'image',
       tokens_json: tokens,
@@ -63,8 +68,17 @@ export async function POST(req: Request) {
       created_at: new Date().toISOString(),
     };
 
-    await supabase.from('projects').insert([projectData]);
-    await incrementSnap();
+    if (isSupabaseConfigured()) {
+      try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        projectData.user_id = user?.id || null;
+        await supabase.from('projects').insert([projectData]);
+        await incrementSnap();
+      } catch (dbErr) {
+        console.warn('DB record save skipped', dbErr);
+      }
+    }
 
     return NextResponse.json({ success: true, project: projectData });
   } catch (error: unknown) {

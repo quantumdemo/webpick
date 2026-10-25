@@ -248,7 +248,7 @@ export default function LoginPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-4 px-6 text-center text-xs text-zinc-500 relative z-10">
-        © 2025 WebPicks Inc. All rights reserved. Ethical Remake Studio.
+        © {new Date().getFullYear()} WebPicks Inc. All rights reserved. Ethical Remake Studio.
       </footer>
     </div>
   );

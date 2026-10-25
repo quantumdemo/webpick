@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { chromium } from 'playwright';
 import { z } from 'zod';
-import { createClient } from '@/lib/supabase/server';
+import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { checkCanSnap, incrementSnap } from '@/lib/usage';
 
 const extractSchema = z.object({
@@ -11,26 +11,34 @@ const extractSchema = z.object({
 export async function POST(req: Request) {
   let browser = null;
   try {
-    const snapCheck = await checkCanSnap();
-    if (!snapCheck.allowed) {
-      return NextResponse.json(
-        {
-          error: 'LIMIT_REACHED',
-          message: snapCheck.needsAuth
-            ? "You've used 3 free snaps. Sign up to get more extractions!"
-            : 'You have exhausted your project credits. Upgrade to Pro for unlimited extractions!',
-          needsAuth: snapCheck.needsAuth,
-        },
-        { status: 403 }
-      );
+    if (!isSupabaseConfigured()) {
+      console.log('DEV MODE - skipping freemium gate checks');
+    } else {
+      try {
+        const snapCheck = await checkCanSnap();
+        if (!snapCheck.allowed) {
+          return NextResponse.json(
+            {
+              error: 'LIMIT_REACHED',
+              message: snapCheck.needsAuth
+                ? "You've used 3 free snaps. Sign up to get more extractions!"
+                : 'You have exhausted your project credits. Upgrade to Pro for unlimited extractions!',
+              needsAuth: snapCheck.needsAuth,
+            },
+            { status: 403 }
+          );
+        }
+      } catch (gateErr) {
+        console.warn('Freemium check error, defaulting to allowed', gateErr);
+      }
     }
 
-    const body = await req.json();
+    const body = await req.json().catch(() => ({}));
     const validation = extractSchema.safeParse(body);
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: validation.error.issues[0]?.message || 'Invalid URL' },
+        { error: validation.error.issues[0]?.message || 'Invalid HTTP/HTTPS URL' },
         { status: 400 }
       );
     }
@@ -124,12 +132,9 @@ export async function POST(req: Request) {
       const hostname = new URL(url).hostname.replace('www.', '');
       const title = hostname.charAt(0).toUpperCase() + hostname.slice(1);
 
-      const supabase = await createClient();
-      const { data: { user } } = await supabase.auth.getUser();
-
-      const projectData = {
+      const projectData: any = {
         id: `proj-${Date.now()}`,
-        user_id: user?.id || null,
+        user_id: null,
         title,
         url,
         type: 'url',
@@ -139,8 +144,17 @@ export async function POST(req: Request) {
         created_at: new Date().toISOString(),
       };
 
-      await supabase.from('projects').insert([projectData]);
-      await incrementSnap();
+      if (isSupabaseConfigured()) {
+        try {
+          const supabase = await createClient();
+          const { data: { user } } = await supabase.auth.getUser();
+          projectData.user_id = user?.id || null;
+          await supabase.from('projects').insert([projectData]);
+          await incrementSnap();
+        } catch (dbErr) {
+          console.warn('DB record save skipped', dbErr);
+        }
+      }
 
       return NextResponse.json({ success: true, project: projectData });
     } catch (browserError) {

@@ -45,7 +45,7 @@ export async function captureElementStates(page: any, selector: string, componen
     // Simulate Hover
     try {
       await el.hover();
-      await page.waitForTimeout(100);
+      await new Promise((resolve) => setTimeout(resolve, 100));
       const hoverStyle = await getStyle();
       if (hoverStyle) states.hover = { state: 'hover', ...hoverStyle };
     } catch {}
@@ -53,7 +53,7 @@ export async function captureElementStates(page: any, selector: string, componen
     // Simulate Focus
     try {
       await el.focus();
-      await page.waitForTimeout(100);
+      await new Promise((resolve) => setTimeout(resolve, 100));
       const focusStyle = await getStyle();
       if (focusStyle) states.focus = { state: 'focus', ...focusStyle };
     } catch {}

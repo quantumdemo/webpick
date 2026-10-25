@@ -260,7 +260,7 @@ export default function LandingPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-8 px-6 text-center text-xs text-zinc-500 mt-auto flex flex-col sm:flex-row items-center justify-between max-w-6xl mx-auto w-full gap-4">
-        <div>© 2025 WebPicks Inc. All rights reserved. Ethical Remake Studio.</div>
+        <div>© {new Date().getFullYear()} WebPicks Inc. All rights reserved. Ethical Remake Studio.</div>
         <div className="flex gap-4">
           <Link href="/terms" className="hover:text-zinc-300 underline">
             Terms of Service

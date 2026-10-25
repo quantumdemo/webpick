@@ -180,7 +180,7 @@ export default function PricingPage() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 py-6 px-6 text-center text-xs text-zinc-500 mt-auto">
-        © 2025 WebPicks Inc. All rights reserved. Ethical Design Extraction Platform.
+        © {new Date().getFullYear()} WebPicks Inc. All rights reserved. Ethical Design Extraction Platform.
       </footer>
     </div>
   );

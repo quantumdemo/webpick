@@ -32,7 +32,7 @@ export default function TermsPage() {
         </section>
       </main>
       <footer className="border-t border-white/10 py-6 px-6 text-center text-xs text-zinc-500">
-        © 2025 WebPicks Inc. All rights reserved.
+        © WebPicks Inc. All rights reserved.
       </footer>
     </div>
   );

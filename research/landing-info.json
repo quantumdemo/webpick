@@ -1,0 +1,1021 @@
+{
+  "title": "Sitepeel — Free Website Tools for Web Developers",
+  "meta": {
+    "viewport": "width=device-width,initial-scale=1",
+    "description": "Free tools for web developers: turn any website into a DESIGN.md, check it for AI slop, download its assets and test every screen size.",
+    "theme-color": "#0B0B0D",
+    "robots": "index,follow,max-image-preview:large",
+    "og:type": "website",
+    "og:site_name": "Sitepeel",
+    "og:title": "Sitepeel — Free Website Tools for Web Developers",
+    "og:description": "Free tools for web developers: turn any website into a DESIGN.md, check it for AI slop, download its assets and test every screen size.",
+    "og:url": "https://sitepeel.dev/",
+    "og:image": "https://sitepeel.dev/images/sitepeel-social.png",
+    "og:image:width": "1200",
+    "og:image:height": "630",
+    "og:image:alt": "Sitepeel: free website tools for developers",
+    "og:updated_time": "2026-10-24T00:00:00+05:30",
+    "twitter:card": "summary_large_image",
+    "twitter:title": "Sitepeel — Free Website Tools for Web Developers",
+    "twitter:description": "Free tools for web developers: turn any website into a DESIGN.md, check it for AI slop, download its assets and test every screen size.",
+    "twitter:image": "https://sitepeel.dev/images/sitepeel-social.png"
+  },
+  "scripts": [
+    {
+      "src": "https://sitepeel.dev/theme.js?v=f8117a763ac2",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "",
+      "id": "",
+      "textContent": "{\"@context\":\"https://schema.org\",\"@graph\":[{\"@type\":\"Organization\",\"@id\":\"https://sitepeel.dev/#organization\",\"name\":\"Sitepeel\",\"url\":\"https://sitepeel.dev/\",\"logo\":\"https://sitepeel.dev/sitepeel.svg\""
+    },
+    {
+      "src": "https://sitepeel.dev/form-protection.js?v=5982e96224b6",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://sitepeel.dev/free-tools.js?v=e23b92f96af4",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://sitepeel.dev/library-client.js?v=3b68c8eda226",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://sitepeel.dev/tool-runner.js?v=c99612470c33",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://sitepeel.dev/home.js?v=9fd662adf2e3",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://sitepeel.dev/analytics.js?v=1ae0de656f6d",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://sitepeel.dev/site-header.js?v=1c8bd072b05f",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://sitepeel.dev/checkout.js?v=ede0b682c5a8",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://www.googletagmanager.com/gtag/js?id=G-JVVV1KHD2L",
+      "id": "sitepeel-google-analytics",
+      "textContent": ""
+    },
+    {
+      "src": "https://datafa.st/js/script.js",
+      "id": "sitepeel-datafast",
+      "textContent": ""
+    },
+    {
+      "src": "https://sitepeel.dev/analytics-provider.js",
+      "id": "sitepeel-posthog",
+      "textContent": ""
+    },
+    {
+      "src": "https://us-assets.i.posthog.com/static/1.428.7/web-vitals.js",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://us-assets.i.posthog.com/static/1.428.7/dead-clicks-autocapture.js",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://us-assets.i.posthog.com/array/phc_zK25hAKc5uwKJ4M7WesWWGNvMyCmcrDBgK5RgHGFzjEs/config.js",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://us-assets.i.posthog.com/static/1.428.7/posthog-recorder.js",
+      "id": "",
+      "textContent": ""
+    },
+    {
+      "src": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092",
+      "id": "",
+      "textContent": ""
+    }
+  ],
+  "nextData": null,
+  "headings": [
+    {
+      "tag": "H1",
+      "text": "Free tools to clone any website."
+    },
+    {
+      "tag": "H2",
+      "text": "Pick a tool.\nPaste any link."
+    },
+    {
+      "tag": "H3",
+      "text": "Clone promptFree"
+    },
+    {
+      "tag": "H3",
+      "text": "DESIGN.md generatorFree"
+    },
+    {
+      "tag": "H3",
+      "text": "AI slop checkerFree"
+    },
+    {
+      "tag": "H3",
+      "text": "Asset extractorFree"
+    },
+    {
+      "tag": "H3",
+      "text": "What font is this?Free"
+    },
+    {
+      "tag": "H3",
+      "text": "Color paletteFree"
+    },
+    {
+      "tag": "H3",
+      "text": "Tech stackFree"
+    },
+    {
+      "tag": "H3",
+      "text": "Responsive checkerFree"
+    },
+    {
+      "tag": "H3",
+      "text": "Website screenshotFree"
+    },
+    {
+      "tag": "H2",
+      "text": ""
+    },
+    {
+      "tag": "H2",
+      "text": ""
+    },
+    {
+      "tag": "H3",
+      "text": ""
+    },
+    {
+      "tag": "H3",
+      "text": ""
+    },
+    {
+      "tag": "H2",
+      "text": ""
+    },
+    {
+      "tag": "H2",
+      "text": ""
+    },
+    {
+      "tag": "H2",
+      "text": ""
+    },
+    {
+      "tag": "H2",
+      "text": "Free tools"
+    },
+    {
+      "tag": "H2",
+      "text": "Sitepeel"
+    },
+    {
+      "tag": "H2",
+      "text": "Legal"
+    },
+    {
+      "tag": "H2",
+      "text": "Explore the places we’re sharing Sitepeel"
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "A",
+      "text": "Sitepeel",
+      "href": "https://sitepeel.dev/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Free tools",
+      "href": "https://sitepeel.dev/free-tools/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "DESIGN.md",
+      "href": "https://sitepeel.dev/design-md/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Extension",
+      "href": "https://sitepeel.dev/extension/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Guides",
+      "href": "https://sitepeel.dev/guides/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Pricing",
+      "href": "https://sitepeel.dev/extension/#pricing",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Your account",
+      "href": "https://sitepeel.dev/account/",
+      "type": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "A",
+      "text": "Your account",
+      "href": "https://sitepeel.dev/account/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Add to Chrome",
+      "href": "https://chromewebstore.google.com/detail/sitepeel/khcjkaobanoeohahnlffnnppinoeljme",
+      "type": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "A",
+      "text": "Add to Chrome",
+      "href": "https://chromewebstore.google.com/detail/sitepeel/khcjkaobanoeohahnlffnnppinoeljme",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Start for free",
+      "href": "https://sitepeel.dev/#run",
+      "type": null
+    },
+    {
+      "tag": "BUTTON",
+      "text": "DESIGN.md",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Clone prompt",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "AI slop checker",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Assets",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Responsive",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Screenshot",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Fonts",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Colors",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Tech stack",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Get DESIGN.md",
+      "href": null,
+      "type": "submit"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "linear.app",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "stripe.com",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "vercel.com",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "play video",
+      "href": null,
+      "type": "button"
+    },
+    {
+      "tag": "A",
+      "text": "h1 · 64px\nBUILD PROMPT\nOVERALL AESTHETIC\nFONTS\nCOLOR THEME\nCOMPONENT CSS\nASSETS & MEDIA\nSECTIONS\nPASTE INTO YOUR AI APP\nClone promptFree\n\nOne prompt that rebuilds any site in Antigravity, Cursor or Claude Code, assets and all.\n\nGet a clone prompt",
+      "href": "https://sitepeel.dev/free-tools/clone-prompt/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "h1 · 48px\nDESIGN.md\ncolors:\ntypography:\nAa\nGeist 650\n48 / 1.05\nrounded: 8px\nspacing: 4 8 16\nDESIGN.md generatorFree\n\nTurn any website into a DESIGN.md your AI coding agent can follow.\n\nGet a DESIGN.md",
+      "href": "https://sitepeel.dev/design-md/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "gradient text\nSLOP SCORE\n72\n/100\nblob · blur 64px\nindigo-600 buttons\nicon cards × 3\nAI slop checkerFree\n\nA score for how AI-made a site looks, every tell we found and a prompt that fixes them.\n\nCheck a site",
+      "href": "https://sitepeel.dev/free-tools/ai-slop-checker/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "glb · 3.7 MB\nhero.webp\n2400 × 1350\nlogo.svg\nSVG\nrobot.glb\n3D\nintro.lottie\nANIM\n312 FILES · 214 HIDDEN\nAsset extractorFree\n\nEvery image, SVG, video, 3D model and animation, hidden ones too.\n\nExtract assets",
+      "href": "https://sitepeel.dev/free-tools/asset-extractor/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "CAP\nX-HEIGHT\nBASELINE\nAa\nGeist 650\nFONT\nGeist\nweight\n650\nsize\n48px\nline\n1.05\ntracking\n-0.05em\nGoogle Fonts ↗\nWhat font is this?Free\n\nEvery font a site uses, with weights, sizes and where to get it.\n\nFind fonts",
+      "href": "https://sitepeel.dev/free-tools/font-finder/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "#C4A5ED\n#8AB4FF\n#8FD19E\n#F0C674\n#F59E7A\n--accent\n50–900\nColor paletteFree\n\nThe site’s real palette, ready for CSS, Tailwind or JSON.\n\nGet the palette",
+      "href": "https://sitepeel.dev/free-tools/color-palette-generator/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "React\nUI\nGSAP\nANIMATION\nTailwind CSS\nCSS\nVercel\nHOSTING\nTech stackFree\n\nThe framework, hosting, libraries and tools behind any site.\n\nFind the stack",
+      "href": "https://sitepeel.dev/free-tools/built-with/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "DESKTOP · 1440\nTABLET · 834\n390 × 844\nResponsive checkerFree\n\nSee a site on phones, tablets, laptops and monitors side by side, and what breaks.\n\nCheck every screen",
+      "href": "https://sitepeel.dev/free-tools/responsive-checker/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "PNG\nJPG\nPDF\nWebsite screenshotFree\n\nFull-page screenshots of any site, framed, blurred where you need it and ready to share.\n\nTake a screenshot",
+      "href": "https://sitepeel.dev/free-tools/screenshot/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "All free tools",
+      "href": "https://sitepeel.dev/free-tools/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/design-md/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/what-is-design-md/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/design-md-claude-code/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/design-md-cursor/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/design-md-codex/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/design-md-github-copilot/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/design-md-windsurf/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/design-md-gemini-cli/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/design-md-app-builders/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/design-md-app-builders/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/html-css-extractor/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/website-cloner/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/design-md-generator/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/website-image-downloader/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/font-preview/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/css-inspector/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/website-prompt-generator/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/website-color-palette/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/font-finder/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/website-text-editor/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/website-screenshot/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/responsive-website-viewer/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/website-layout-editor/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://chromewebstore.google.com/detail/sitepeel/khcjkaobanoeohahnlffnnppinoeljme",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/extension/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/what-is-design-md/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/design-md-claude-code/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/check-if-website-looks-ai-generated/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/download-svg-from-website/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/check-website-on-every-screen-size/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/how-to-clone-a-website/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://sitepeel.dev/guides/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Sitepeel",
+      "href": "https://sitepeel.dev/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "DESIGN.md generator",
+      "href": "https://sitepeel.dev/design-md/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Clone prompt",
+      "href": "https://sitepeel.dev/free-tools/clone-prompt/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "AI slop checker",
+      "href": "https://sitepeel.dev/free-tools/ai-slop-checker/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Asset extractor",
+      "href": "https://sitepeel.dev/free-tools/asset-extractor/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Responsive checker",
+      "href": "https://sitepeel.dev/free-tools/responsive-checker/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Website screenshot",
+      "href": "https://sitepeel.dev/free-tools/screenshot/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "All free tools",
+      "href": "https://sitepeel.dev/free-tools/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Chrome extension",
+      "href": "https://sitepeel.dev/extension/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Extension tools",
+      "href": "https://sitepeel.dev/features/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Pricing",
+      "href": "https://sitepeel.dev/extension/#pricing",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Guides",
+      "href": "https://sitepeel.dev/guides/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "About",
+      "href": "https://sitepeel.dev/about/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Contact",
+      "href": "https://sitepeel.dev/contact/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Your account",
+      "href": "https://sitepeel.dev/account/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Privacy",
+      "href": "https://sitepeel.dev/privacy/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Terms",
+      "href": "https://sitepeel.dev/terms/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Refunds",
+      "href": "https://sitepeel.dev/refunds/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "Privacy choices",
+      "href": "https://sitepeel.dev/privacy#choices",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://www.betterlaunch.co/product/sitepeel",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://startupfa.st/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://www.scrolllaunch.com/products/sitepeel?ref=badge",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://www.foundrlist.com/product/sitepeel?utm_source=badge&utm_medium=embed",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://frogdr.com/sitepeel.dev?utm_source=sitepeel.dev",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "TFToolFame↗",
+      "href": "https://toolfame.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "FTFindly Tools↗",
+      "href": "https://findly.tools/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "SFStartup Fame↗",
+      "href": "https://startupfa.me/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "OHOpenHunts↗",
+      "href": "https://openhunts.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "LILaunchIgniter↗",
+      "href": "https://launchigniter.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "SLSmol Launch↗",
+      "href": "https://smollaunch.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "T0Turbo0↗",
+      "href": "https://turbo0.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "SBStartupBase↗",
+      "href": "https://startupbase.io/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "A+Aura++↗",
+      "href": "https://auraplusplus.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "EHEarlyHunt↗",
+      "href": "https://earlyhunt.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "AAltern↗",
+      "href": "https://altern.ai/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "12Twelve Tools↗",
+      "href": "https://twelve.tools/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "DPDailyPings↗",
+      "href": "https://dailypings.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "TSTiny Startups↗",
+      "href": "https://www.tinystartups.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "FFazier↗",
+      "href": "https://fazier.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "NNeeed Directory↗",
+      "href": "https://neeed.directory/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "UUNO Directory↗",
+      "href": "https://uno.directory/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "LVLaunch Vault↗",
+      "href": "https://www.launchvault.dev/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://www.betterlaunch.co/product/sitepeel",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://startupfa.st/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://www.scrolllaunch.com/products/sitepeel?ref=badge",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://www.foundrlist.com/product/sitepeel?utm_source=badge&utm_medium=embed",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "",
+      "href": "https://frogdr.com/sitepeel.dev?utm_source=sitepeel.dev",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "TFToolFame↗",
+      "href": "https://toolfame.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "FTFindly Tools↗",
+      "href": "https://findly.tools/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "SFStartup Fame↗",
+      "href": "https://startupfa.me/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "OHOpenHunts↗",
+      "href": "https://openhunts.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "LILaunchIgniter↗",
+      "href": "https://launchigniter.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "SLSmol Launch↗",
+      "href": "https://smollaunch.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "T0Turbo0↗",
+      "href": "https://turbo0.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "SBStartupBase↗",
+      "href": "https://startupbase.io/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "A+Aura++↗",
+      "href": "https://auraplusplus.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "EHEarlyHunt↗",
+      "href": "https://earlyhunt.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "AAltern↗",
+      "href": "https://altern.ai/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "12Twelve Tools↗",
+      "href": "https://twelve.tools/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "DPDailyPings↗",
+      "href": "https://dailypings.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "TSTiny Startups↗",
+      "href": "https://www.tinystartups.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "FFazier↗",
+      "href": "https://fazier.com/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "NNeeed Directory↗",
+      "href": "https://neeed.directory/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "UUNO Directory↗",
+      "href": "https://uno.directory/",
+      "type": null
+    },
+    {
+      "tag": "A",
+      "text": "LVLaunch Vault↗",
+      "href": "https://www.launchvault.dev/",
+      "type": null
+    }
+  ],
+  "inputs": [
+    {
+      "placeholder": "Paste a link, like raycast.com",
+      "type": "text",
+      "name": "url",
+      "value": ""
+    }
+  ],
+  "bodyText": "Sitepeel\nFree tools\nDESIGN.md\nExtension\nGuides\nPricing\nYour account\nAdd to Chrome\nFree tools to clone any website.\n\nPaste a link to get a prompt that rebuilds it with AI, plus its DESIGN.md, assets, fonts and colors.\n\nAdd to Chrome\nStart for free\nDESIGN.md\nClone prompt\nAI slop checker\nAssets\nResponsive\nScreenshot\nFonts\nColors\nTech stack\nWebsite link\nGet DESIGN.md\n\nGets the site’s style guide and a DESIGN.md file, so your AI coding agent builds in that style.\n\ntry\nlinear.app\nstripe.com\nvercel.com\nplay video\nPick a tool.\nPaste any link.\n\nNine free tools. Each one shows its result in seconds, with no install.\n\nh1 · 64px\nBUILD PROMPT\nOVERALL AESTHETIC\nFONTS\nCOLOR THEME\nCOMPONENT CSS\nASSETS & MEDIA\nSECTIONS\nPASTE INTO YOUR AI APP\nClone promptFree\n\nOne prompt that rebuilds any site in Antigravity, Cursor or Claude Code, assets and all.\n\nGet a clone prompt\nh1 · 48px\nDESIGN.md\ncolors:\ntypography:\nAa\nGeist 650\n48 / 1.05\nrounded: 8px\nspacing: 4 8 16\nDESIGN.md generatorFree\n\nTurn any website into a DESIGN.md your AI coding agent can follow.\n\nGet a DESIGN.md\ngradient text\nSLOP SCORE\n72\n/100\nblob · blur 64px\nindigo-600 buttons\nicon cards × 3\nAI slop checkerFree\n\nA score for how AI-made a site looks, every tell we found and a prompt that fixes them.\n\nCheck a site\nglb · 3.7 MB\nhero.webp\n2400 × 1350\nlogo.svg\nSVG\nrobot.glb\n3D\nintro.lottie\nANIM\n312 FILES · 214 HIDDEN\nAsset extractorFree\n\nEvery image, SVG, video, 3D model and animation, hidden ones too.\n\nExtract assets\nCAP\nX-HEIGHT\nBASELINE\nAa\nGeist 650\nFONT\nGeist\nweight\n650\nsize\n48px\nline\n1.05\ntracking\n-0.05em\nGoogle Fonts ↗\nWhat font is this?Free\n\nEvery font a site uses, with weights, sizes and where to get it.\n\nFind fonts\n#C4A5ED\n#8AB4FF\n#8FD19E\n#F0C674\n#F59E7A\n--accent\n50–900\nColor paletteFree\n\nThe site’s real palette, ready for CSS, Tailwind or JSON.\n\nGet the palette\nReact\nUI\nGSAP\nANIMATION\nTailwind CSS\nCSS\nVercel\nHOSTING\nTech stackFree\n\nThe framework, hosting, libraries and tools behind any site.\n\nFind the stack\nDESKTOP · 1440\nTABLET · 834\n390 × 844\nResponsive checkerFree\n\nSee a site on phones, tablets, laptops and monitors side by side, and what breaks.\n\nCheck every screen\nPNG\nJPG\nPDF\nWebsite screenshotFree\n\nFull-page screenshots of any site, framed, blurred where you need it and ready to share.\n\nTake a screenshot\nAll free tools\nSitepeel\n\nFree website tools for designers and developers, and a Chrome extension with 13 more.\n\nFree tools\nDESIGN.md generator\nClone prompt\nAI slop checker\nAsset extractor\nResponsive checker\nWebsite screenshot\nAll free tools\nSitepeel\nChrome extension\nExtension tools\nPricing\nGuides\nAbout\nContact\nYour account\nLegal\nPrivacy\nTerms\nRefunds\nPrivacy choices\n\n© 2026 Sitepeel\n\nMade for people who build for the web\n\nOne quick check\nConfirm you’re human and we’ll start right away."
+}

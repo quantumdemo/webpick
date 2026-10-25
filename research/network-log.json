@@ -1,0 +1,442 @@
+[
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/theme.js?v=f8117a763ac2"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/fonts/inter-latin.woff2"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/free-tools.css?v=3a48f0e28f75"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/free-tools-shell.css?v=8ab3adcf1432"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/ui.css?v=e5f5387d6de2"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/home.css?v=2d9afdbd5bd0"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/form-protection.css?v=5cdf56bd0db1"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/form-protection.js?v=5982e96224b6"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/free-tools.js?v=e23b92f96af4"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/library-client.js?v=3b68c8eda226"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/tool-runner.js?v=c99612470c33"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/home.js?v=9fd662adf2e3"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/analytics.js?v=1ae0de656f6d"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/ui-legacy.css?v=a8fb68dbc18e"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/pages-ui.css?v=77a902d00694"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/site-header.css?v=0425b268fff0"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/site-header.js?v=1c8bd072b05f"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/checkout.js?v=ede0b682c5a8"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/site-footer.css?v=51383c86eaff"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/field-focus.css?v=265ceaf93ad9"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/sitepeel.svg"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/logos/chrome.svg"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/videos/walkthrough.webp"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/tech/logos/react.svg"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/tech/logos/gsap.svg"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/tech/logos/tailwindcss.svg"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/tech/sites/vercel.svg"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/videos/demo-all.webp"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/site-header.css?v=0425b268fff0"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/free-tools-shell.css?v=8ab3adcf1432"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/tech/logos/gsap.svg"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/fonts/inter-latin.woff2"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/home.css?v=2d9afdbd5bd0"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/ui-legacy.css?v=a8fb68dbc18e"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/pages-ui.css?v=77a902d00694"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/theme.js?v=f8117a763ac2"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/site-footer.css?v=51383c86eaff"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/free-tools.css?v=3a48f0e28f75"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/form-protection.css?v=5cdf56bd0db1"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/logos/chrome.svg"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/site-header.js?v=1c8bd072b05f"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/analytics.js?v=1ae0de656f6d"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/videos/walkthrough.webp"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/ui.css?v=e5f5387d6de2"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/field-focus.css?v=265ceaf93ad9"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/fonts/geist-mono-latin.woff2"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/fonts/geist-core.woff2"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/tech/sites/linear.svg"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/tech/sites/stripe.svg"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/tech/logos/tailwindcss.svg"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/sitepeel.svg"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/videos/demo-all.webp"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/tech/sites/vercel.svg"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/library-client.js?v=3b68c8eda226"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/free-tools.js?v=e23b92f96af4"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/form-protection.js?v=5982e96224b6"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/home.js?v=9fd662adf2e3"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/tool-runner.js?v=c99612470c33"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/api/analytics/identity"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/checkout.js?v=ede0b682c5a8"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/tech/sites/stripe.svg"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/fonts/geist-mono-latin.woff2"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/fonts/geist-core.woff2"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/tech/sites/linear.svg"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/tech/logos/react.svg"
+  },
+  {
+    "type": "req",
+    "method": "POST",
+    "url": "https://sitepeel.dev/cdn-cgi/rum?"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://www.googletagmanager.com/gtag/js?id=G-JVVV1KHD2L"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://datafa.st/js/script.js"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://sitepeel.dev/analytics-provider.js"
+  },
+  {
+    "type": "res",
+    "status": 204,
+    "url": "https://sitepeel.dev/cdn-cgi/rum?"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/api/analytics/identity"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://sitepeel.dev/analytics-provider.js"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://us-assets.i.posthog.com/static/1.428.7/web-vitals.js"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://us-assets.i.posthog.com/static/1.428.7/dead-clicks-autocapture.js"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://us-assets.i.posthog.com/array/phc_zK25hAKc5uwKJ4M7WesWWGNvMyCmcrDBgK5RgHGFzjEs/config.js"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://datafa.st/js/script.js"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://us-assets.i.posthog.com/array/phc_zK25hAKc5uwKJ4M7WesWWGNvMyCmcrDBgK5RgHGFzjEs/config.js"
+  },
+  {
+    "type": "req",
+    "method": "GET",
+    "url": "https://us-assets.i.posthog.com/static/1.428.7/posthog-recorder.js"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://us-assets.i.posthog.com/static/1.428.7/dead-clicks-autocapture.js"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://www.googletagmanager.com/gtag/js?id=G-JVVV1KHD2L"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://us-assets.i.posthog.com/static/1.428.7/web-vitals.js"
+  },
+  {
+    "type": "req",
+    "method": "POST",
+    "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-JVVV1KHD2L&gtm=45je6al1v9263637820za208zd9263637820xf1&_p=1792938397274&gcs=G101&gcd=13p3t3p3p7l1&npa=1&dma_cps=-&dma=0&cid=425760307.1792938398&frm=0&ngs=1&pscdl=denied&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253AA-Brand%3B8.0.0.0%7CChromium%3B156.0.8078.4%7CHeadlessChrome%3B156.0.8078.4&uam=&uamb=0&uap=Linux&uapv=&uaw=0&ul=en-us&_s=1&tag_exp=115938466~115938469~118897920~118897930~120213116~120385423~120469145~120469153~121246026~121246034&dl=https%3A%2F%2Fsitepeel.dev%2F&dr=&sid=1792938397&sct=1&seg=0&dt=Sitepeel%20%E2%80%94%20Free%20Website%20Tools%20for%20Web%20Developers&_tu=AAg&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1815"
+  },
+  {
+    "type": "res",
+    "status": 200,
+    "url": "https://us-assets.i.posthog.com/static/1.428.7/posthog-recorder.js"
+  },
+  {
+    "type": "res",
+    "status": 204,
+    "url": "https://www.google-analytics.com/g/collect?v=2&tid=G-JVVV1KHD2L&gtm=45je6al1v9263637820za208zd9263637820xf1&_p=1792938397274&gcs=G101&gcd=13p3t3p3p7l1&npa=1&dma_cps=-&dma=0&cid=425760307.1792938398&frm=0&ngs=1&pscdl=denied&rcb=2&sr=1280x720&uaa=x86&uab=64&uafvl=Not%253AA-Brand%3B8.0.0.0%7CChromium%3B156.0.8078.4%7CHeadlessChrome%3B156.0.8078.4&uam=&uamb=0&uap=Linux&uapv=&uaw=0&ul=en-us&_s=1&tag_exp=115938466~115938469~118897920~118897930~120213116~120385423~120469145~120469153~121246026~121246034&dl=https%3A%2F%2Fsitepeel.dev%2F&dr=&sid=1792938397&sct=1&seg=0&dt=Sitepeel%20%E2%80%94%20Free%20Website%20Tools%20for%20Web%20Developers&_tu=AAg&en=page_view&_fv=1&_nsi=1&_ss=1&_ee=1&tfd=1815"
+  }
+]

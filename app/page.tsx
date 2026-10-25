@@ -44,7 +44,13 @@ export default function LandingPage() {
         body: JSON.stringify({ url: urlInput }),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        toast.error('Server error: Unreadable response from extraction service');
+        return;
+      }
 
       if (res.status === 403) {
         setPaywallModal({

@@ -54,7 +54,13 @@ export default function DashboardPage() {
         body: JSON.stringify({ url }),
       });
 
-      const data = await res.json();
+      let data: any = {};
+      try {
+        data = await res.json();
+      } catch (parseErr) {
+        toast.error('Server error: Unreadable response from extraction service');
+        return;
+      }
 
       if (res.status === 403) {
         toast.error(data.message || 'Quota reached! Upgrade to Pro for more extractions.');

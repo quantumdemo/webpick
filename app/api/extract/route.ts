@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { checkCanSnap, incrementSnap } from '@/lib/usage';
 
+export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
 const extractSchema = z.object({

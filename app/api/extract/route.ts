@@ -5,6 +5,14 @@ import { z } from 'zod';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { checkCanSnap, incrementSnap } from '@/lib/usage';
 
+// Import our modular extraction engine
+import { groupColors } from '@/lib/extract/tokens';
+import { captureElementStates } from '@/lib/extract/states';
+import { snapSpacingToGrid, harmonizeContrast } from '@/lib/extract/harmonizer';
+import { compileReactComponents, compileDesignMd } from '@/lib/extract/compiler';
+import { generatePromptSuite } from '@/lib/extract/prompts';
+import { extractPageAssets, detectTechStack } from '@/lib/extract/assets';
+
 export const dynamic = 'force-dynamic';
 export const maxDuration = 60;
 
@@ -46,24 +54,20 @@ export async function POST(req: Request) {
     }
 
     const { url } = validation.data;
-
     const chromiumInstance: any = (chromium as any).default || chromium;
 
     let executablePath: string | undefined;
 
-    // Check if running in a Vercel/Lambda serverless environment or local machine
     if (process.env.CHROME_EXECUTABLE_PATH) {
       executablePath = process.env.CHROME_EXECUTABLE_PATH;
     } else if (process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_VERSION) {
       try {
-        // Option to pass remote pack URL if bin directory is not bundled by Vercel
         const packUrl = process.env.CHROMIUM_PACK_URL || 'https://github.com/Sparticuz/chromium/releases/download/v123.0.0/chromium-v123.0.0-pack.tar';
         executablePath = await chromiumInstance.executablePath(packUrl);
       } catch {
         executablePath = await chromiumInstance.executablePath();
       }
     } else {
-      // Development or standard Linux/Docker container fallback
       const fs = await import('fs');
       const localPaths = [
         '/usr/bin/google-chrome',
@@ -99,9 +103,10 @@ export async function POST(req: Request) {
       'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
     );
 
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
     await new Promise((resolve) => setTimeout(resolve, 2000));
 
+    // 1. Core Token Extraction
     const extractedTokens = await page.evaluate(() => {
       const rgbToHex = (rgb: string) => {
         if (!rgb || rgb === 'transparent' || rgb.includes('rgba(0, 0, 0, 0)')) return null;
@@ -112,9 +117,10 @@ export async function POST(req: Request) {
       };
 
       const elements = Array.from(document.querySelectorAll('*'));
-      const colorSet = new Set<string>();
+      const colorCounts = new Map<string, number>();
       const fontSet = new Set<string>();
       const radiusSet = new Set<string>();
+      const spacingSet = new Set<string>();
 
       elements.slice(0, 400).forEach((el) => {
         const style = window.getComputedStyle(el);
@@ -122,27 +128,26 @@ export async function POST(req: Request) {
         const hexFg = rgbToHex(style.color);
         const hexBorder = rgbToHex(style.borderColor);
 
-        if (hexBg) colorSet.add(hexBg.toUpperCase());
-        if (hexFg) colorSet.add(hexFg.toUpperCase());
-        if (hexBorder) colorSet.add(hexBorder.toUpperCase());
+        [hexBg, hexFg, hexBorder].forEach((c) => {
+          if (c) {
+            const upper = c.toUpperCase();
+            colorCounts.set(upper, (colorCounts.get(upper) || 0) + 1);
+          }
+        });
 
         if (style.fontFamily) {
           const family = style.fontFamily.split(',')[0].replace(/['"]/g, '').trim();
           if (family) fontSet.add(family);
         }
 
-        if (style.borderRadius && style.borderRadius !== '0px') {
-          radiusSet.add(style.borderRadius);
-        }
+        if (style.borderRadius && style.borderRadius !== '0px') radiusSet.add(style.borderRadius);
+        if (style.padding && style.padding !== '0px') spacingSet.add(style.padding.split(' ')[0]);
       });
 
-      const rawColors = Array.from(colorSet).slice(0, 16);
-      const palette = rawColors.map((hex, index) => ({
-        hex,
-        rgb: hex,
-        name: index === 0 ? 'Primary Surface' : index === 1 ? 'Brand Accent' : `Token ${index + 1}`,
-        role: index === 0 ? 'background' : index === 1 ? 'accent' : 'surface',
-      }));
+      const rawColors = Array.from(colorCounts.entries())
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 16)
+        .map(([hex, count]) => ({ hex, count }));
 
       return {
         meta: {
@@ -150,35 +155,52 @@ export async function POST(req: Request) {
           extractedAt: new Date().toISOString(),
           viewport: { width: 1440, height: 900 },
         },
-        colors:
-          palette.length > 0
-            ? palette
-            : [
-                { hex: '#0A0B0E', rgb: 'rgb(10, 11, 14)', name: 'Primary Surface', role: 'background' },
-                { hex: '#6366F1', rgb: 'rgb(99, 102, 241)', name: 'Brand Accent', role: 'accent' },
-                { hex: '#FFFFFF', rgb: 'rgb(255, 255, 255)', name: 'Text Primary', role: 'text' },
-              ],
+        rawColors,
         typography: {
-          fontFamilies:
-            Array.from(fontSet).slice(0, 3).length > 0
-              ? Array.from(fontSet).slice(0, 3)
-              : ['Inter', 'sans-serif'],
+          fontFamilies: Array.from(fontSet).slice(0, 4),
           headings: [
             { tag: 'H1', fontSize: '56px', fontWeight: '700', lineHeight: '1.1' },
             { tag: 'H2', fontSize: '36px', fontWeight: '600', lineHeight: '1.2' },
           ],
           body: { fontSize: '16px', fontWeight: '400', lineHeight: '1.5' },
         },
-        spacing: ['4px', '8px', '16px', '24px', '32px', '48px', '64px'],
-        radii:
-          Array.from(radiusSet).slice(0, 3).length > 0
-            ? Array.from(radiusSet).slice(0, 3)
-            : ['6px', '12px', '9999px'],
+        spacing: Array.from(spacingSet).slice(0, 8),
+        radii: Array.from(radiusSet).slice(0, 4),
       };
     });
 
+    // 2. Interactive State Simulation (Gap #2)
+    const buttonStates = await captureElementStates(page, 'button, a.btn, [role="button"]', 'Button');
+
+    // 3. Asset & Tech Stack Detection
+    const assets = await extractPageAssets(page);
+    const techStack = await detectTechStack(page);
+
+    // 4. Color Grouping & Harmonization (Gap #4)
+    const colorGroups = groupColors(extractedTokens.rawColors || []);
+    const primaryBg = colorGroups.surfaces[0]?.hex || '#08090A';
+    const primaryFg = colorGroups.text[0]?.hex || '#F7F8F8';
+    const wcagReport = harmonizeContrast(primaryFg, primaryBg);
+
+    // 5. Harmonize Spacing Scale (Gap #4)
+    const harmonizedSpacing = (extractedTokens.spacing || ['4px', '8px', '16px', '24px']).map(snapSpacingToGrid);
+
+    const tokens = {
+      meta: extractedTokens.meta,
+      colors: colorGroups,
+      typography: extractedTokens.typography,
+      spacing: harmonizedSpacing,
+      radii: extractedTokens.radii,
+      interactiveStates: buttonStates ? [buttonStates] : [],
+    };
+
     const hostname = new URL(url).hostname.replace('www.', '');
     const title = hostname.charAt(0).toUpperCase() + hostname.slice(1);
+
+    // 6. Code & Prompt Compilation (Gap #1 & Gap #5)
+    const components = compileReactComponents(tokens);
+    const designMd = compileDesignMd(title, url, tokens);
+    const promptSuite = generatePromptSuite(title, designMd);
 
     const projectData: any = {
       id: `proj-${Date.now()}`,
@@ -186,7 +208,7 @@ export async function POST(req: Request) {
       title,
       url,
       type: 'url',
-      tokens_json: extractedTokens,
+      tokens_json: tokens,
       screenshot_url: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&q=80',
       status: 'completed',
       created_at: new Date().toISOString(),
@@ -206,7 +228,17 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({ success: true, project: projectData });
+    return NextResponse.json({
+      success: true,
+      project: projectData,
+      designMd,
+      tokens,
+      components,
+      prompts: promptSuite,
+      assets,
+      wcagReport,
+      techStack,
+    });
   } catch (err: any) {
     console.error('EXTRACTION_FAILED:', err);
     return NextResponse.json(

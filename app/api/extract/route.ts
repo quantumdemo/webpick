@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import chromium from '@sparticuz/chromium';
-import { chromium as pwCore } from 'playwright-core';
+import puppeteer from 'puppeteer-core';
 import { z } from 'zod';
 import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
 import { checkCanSnap, incrementSnap } from '@/lib/usage';
@@ -49,21 +49,20 @@ export async function POST(req: Request) {
 
     const executablePath = await chromium.executablePath();
 
-    browser = await pwCore.launch({
+    browser = await puppeteer.launch({
       args: chromium.args,
+      defaultViewport: { width: 1440, height: 900 },
       executablePath: executablePath || undefined,
       headless: true,
     });
 
-    const context = await browser.newContext({
-      viewport: { width: 1440, height: 900 },
-      userAgent:
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-    });
+    const page = await browser.newPage();
+    await page.setUserAgent(
+      'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    );
 
-    const page = await context.newPage();
-    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 15000 });
-    await page.waitForTimeout(2000);
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 20000 });
+    await new Promise((resolve) => setTimeout(resolve, 2000));
 
     const extractedTokens = await page.evaluate(() => {
       const rgbToHex = (rgb: string) => {
@@ -113,13 +112,19 @@ export async function POST(req: Request) {
           extractedAt: new Date().toISOString(),
           viewport: { width: 1440, height: 900 },
         },
-        colors: palette.length > 0 ? palette : [
-          { hex: '#0A0B0E', rgb: 'rgb(10, 11, 14)', name: 'Primary Surface', role: 'background' },
-          { hex: '#6366F1', rgb: 'rgb(99, 102, 241)', name: 'Brand Accent', role: 'accent' },
-          { hex: '#FFFFFF', rgb: 'rgb(255, 255, 255)', name: 'Text Primary', role: 'text' },
-        ],
+        colors:
+          palette.length > 0
+            ? palette
+            : [
+                { hex: '#0A0B0E', rgb: 'rgb(10, 11, 14)', name: 'Primary Surface', role: 'background' },
+                { hex: '#6366F1', rgb: 'rgb(99, 102, 241)', name: 'Brand Accent', role: 'accent' },
+                { hex: '#FFFFFF', rgb: 'rgb(255, 255, 255)', name: 'Text Primary', role: 'text' },
+              ],
         typography: {
-          fontFamilies: Array.from(fontSet).slice(0, 3).length > 0 ? Array.from(fontSet).slice(0, 3) : ['Inter', 'sans-serif'],
+          fontFamilies:
+            Array.from(fontSet).slice(0, 3).length > 0
+              ? Array.from(fontSet).slice(0, 3)
+              : ['Inter', 'sans-serif'],
           headings: [
             { tag: 'H1', fontSize: '56px', fontWeight: '700', lineHeight: '1.1' },
             { tag: 'H2', fontSize: '36px', fontWeight: '600', lineHeight: '1.2' },
@@ -127,7 +132,10 @@ export async function POST(req: Request) {
           body: { fontSize: '16px', fontWeight: '400', lineHeight: '1.5' },
         },
         spacing: ['4px', '8px', '16px', '24px', '32px', '48px', '64px'],
-        radii: Array.from(radiusSet).slice(0, 3).length > 0 ? Array.from(radiusSet).slice(0, 3) : ['6px', '12px', '9999px'],
+        radii:
+          Array.from(radiusSet).slice(0, 3).length > 0
+            ? Array.from(radiusSet).slice(0, 3)
+            : ['6px', '12px', '9999px'],
       };
     });
 
@@ -149,7 +157,9 @@ export async function POST(req: Request) {
     if (isSupabaseConfigured()) {
       try {
         const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         projectData.user_id = user?.id || null;
         await supabase.from('projects').insert([projectData]);
         await incrementSnap();

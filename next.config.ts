@@ -1,12 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['playwright-core', '@sparticuz/chromium'],
+  serverExternalPackages: ['@sparticuz/chromium', 'puppeteer-core'],
   turbopack: {},
   webpack: (config) => {
     config.externals.push({
-      'playwright-core': 'commonjs playwright-core',
       '@sparticuz/chromium': 'commonjs @sparticuz/chromium',
+      'puppeteer-core': 'commonjs puppeteer-core',
     });
     return config;
   },
